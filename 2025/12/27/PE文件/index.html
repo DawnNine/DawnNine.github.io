@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            PE学习
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="PE学习"><a href="#PE学习" class="headerlink" title="PE学习"></a>PE学习</h1><blockquote>
+<p>PE文件本质上是一段特殊的代码块，这个代码块记录了，接下来要运行的代码的入口函数以及要加载到内存的大小，代码类型基质等。windows在运行该代码前首先要进行校验代码的合规性。当校验通过时，才会执行该代码程序，如果没有校验则不会加载。</p>
+</blockquote>
+<h3 id="pe文件组成"><a href="#pe文件组成" class="headerlink" title="pe文件组成"></a>pe文件组成</h3><p><img src="/2025/12/27/PE%E6%96%87%E4%BB%B6/image-20250921013249712.png" alt="image-20250921013249712"></p>
+<p>​	PE文件结构分为四部分：DOS头、PE文件头、表节、节数据；重点关注前三个内容。</p>
+<h3 id="DOS头"><a href="#DOS头" class="headerlink" title="DOS头"></a>DOS头</h3><p>​	目前的DOS头的重点关注两个值<code>e_magic</code>和<code>e_lfanew</code>。e_magic必须是5A4D，代表是DOS头的开始，e_lfanew是指PE头位置。</p>
+<p><img src="/2025/12/27/PE%E6%96%87%E4%BB%B6/image-20250921033928181-1758397169877-5.png" alt="image-20250921033928181"></p>
+<p>​	使用winhex打开X86程序，因为是X86程序所以是小程序，显示除了e_magic和e_lfanew其余全部填充C依旧可以运行，说明目前已经不检测其他值。黄色是DOS头内容，紫色是汇编内容转到PE文件。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">DOS结构体：</span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_DOS_HEADER</span> &#123;</span>      <span class="comment">// DOS 可执行文件头（MS-DOS 头）</span></span><br><span class="line">    WORD   e_magic;                     <span class="comment">// 魔数（Magic Number）：必须是 &#x27;MZ&#x27; (0x5A4D)，标识这是一个 DOS 可执行文件</span></span><br><span class="line">    WORD   e_cblp;                      <span class="comment">// 文件最后一块（页）占用的字节数（1块=512字节）</span></span><br><span class="line">    WORD   e_cp;                        <span class="comment">// 文件占用的总块数（每块512字节），用于DOS加载器计算文件大小</span></span><br><span class="line">    WORD   e_crlc;                      <span class="comment">// 重定位项的数量（在老式DOS程序中使用）</span></span><br><span class="line">    WORD   e_cparhdr;                   <span class="comment">// 文件头的大小（以“段落”为单位，1段落=16字节）</span></span><br><span class="line">    WORD   e_minalloc;                  <span class="comment">// 所需最小附加内存（以段落为单位），0表示不需要</span></span><br><span class="line">    WORD   e_maxalloc;                  <span class="comment">// 所需最大附加内存（以段落为单位），-1表示尽可能多</span></span><br><span class="line">    WORD   e_ss;                        <span class="comment">// 初始堆栈段寄存器 SS 的相对值（SS = 段基址 + e_ss）</span></span><br><span class="line">    WORD   e_sp;                        <span class="comment">// 初始堆栈指针 SP 值（SP 指向栈顶）</span></span><br><span class="line">    WORD   e_csum;                      <span class="comment">// 文件校验和（DOS程序中通常为0，不使用）</span></span><br><span class="line">    WORD   e_ip;                        <span class="comment">// 初始指令指针 IP 值（程序入口点偏移）</span></span><br><span class="line">    WORD   e_cs;                        <span class="comment">// 初始代码段寄存器 CS 的相对值（CS = 段基址 + e_cs）</span></span><br><span class="line">    WORD   e_lfarlc;                    <span class="comment">// 重定位表在文件中的偏移地址（相对于文件开头）</span></span><br><span class="line">    WORD   e_ovno;                      <span class="comment">// 覆盖号（Overlay number），用于DOS下的覆盖编程，一般为0</span></span><br><span class="line">    WORD   e_res[<span class="number">4</span>];                    <span class="comment">// 保留字段，必须为0</span></span><br><span class="line">    WORD   e_oemid;                     <span class="comment">// OEM 标识符（用于 e_oeminfo 字段的解释）</span></span><br><span class="line">    WORD   e_oeminfo;                   <span class="comment">// OEM 信息，具体含义由 e_oemid 决定</span></span><br><span class="line">    WORD   e_res2[<span class="number">10</span>];                  <span class="comment">// 保留字段，必须为0</span></span><br><span class="line">    LONG   e_lfanew;                    <span class="comment">// 新的 PE 头（NT头）在文件中的偏移地址（相对于文件开头）</span></span><br><span class="line">                                        <span class="comment">// 重要！它指向 &quot;PE\0\0&quot; 签名的位置，是解析PE结构的起点</span></span><br><span class="line">&#125; IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;</span><br></pre></td></tr></table></figure>
+
+<h3 id="PF头"><a href="#PF头" class="headerlink" title="PF头"></a>PF头</h3><p>​	PE头是由三部分组成：PE标识、标准PE头、扩展PE头。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_NT_HEADERS</span> &#123;</span></span><br><span class="line">    DWORD Signature;			<span class="comment">//PE标识 4550</span></span><br><span class="line">    IMAGE_FILE_HEADER FileHeader;<span class="comment">//标准PE头</span></span><br><span class="line">    IMAGE_OPTIONAL_HEADER32 OptionalHeader;<span class="comment">//扩展PE头</span></span><br><span class="line">&#125; IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;</span><br></pre></td></tr></table></figure>
+<p>标准PE头</p>
+<p><img src="/2025/12/27/PE%E6%96%87%E4%BB%B6/image-20250921034652817.png" alt="image-20250921034652817"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_FILE_HEADER</span> &#123;</span></span><br><span class="line">    WORD    Machine;	<span class="comment">//当前程序的平台架构，可以运行在什么cpu上</span></span><br><span class="line">    WORD    NumberOfSections;	<span class="comment">//段（节）的数量</span></span><br><span class="line">    DWORD   TimeDateStamp;	<span class="comment">//时间戳</span></span><br><span class="line">    DWORD   PointerToSymbolTable;<span class="comment">//调试相关</span></span><br><span class="line">    DWORD   NumberOfSymbols;	<span class="comment">//调试相关</span></span><br><span class="line">    WORD    SizeOfOptionalHeader;<span class="comment">//扩展PE头的大小</span></span><br><span class="line">    WORD    Characteristics;	<span class="comment">//文件属性</span></span><br><span class="line">&#125; IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>扩展PE头</p>
+<p><img src="/2025/12/27/PE%E6%96%87%E4%BB%B6/image-20250921035222216.png" alt="image-20250921035222216"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_OPTIONAL_HEADER</span> &#123;</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// Standard fields.</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">    WORD    Magic;                       <span class="comment">// 标识是否为PE32或PE32+格式</span></span><br><span class="line">    BYTE    MajorLinkerVersion;          <span class="comment">// 链接器主版本号</span></span><br><span class="line">    BYTE    MinorLinkerVersion;          <span class="comment">// 链接器次版本号</span></span><br><span class="line">    DWORD   SizeOfCode;                  <span class="comment">// 所有代码节的总大小</span></span><br><span class="line">    DWORD   SizeOfInitializedData;       <span class="comment">// 初始化数据的大小</span></span><br><span class="line">    DWORD   SizeOfUninitializedData;     <span class="comment">// 未初始化数据的大小</span></span><br><span class="line">    DWORD   AddressOfEntryPoint;         <span class="comment">// 程序入口点的RVA</span></span><br><span class="line">    DWORD   BaseOfCode;                  <span class="comment">// 代码节的起始RVA</span></span><br><span class="line">    ULONGLONG BaseOfData;                <span class="comment">// 数据节的起始RVA (仅在PE32中存在)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// NT additional fields.</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">    ULONGLONG ImageBase;                 <span class="comment">// 程序首选加载地址</span></span><br><span class="line">    DWORD   SectionAlignment;            <span class="comment">// 内存对齐粒度</span></span><br><span class="line">    DWORD   FileAlignment;               <span class="comment">// 文件对齐粒度</span></span><br><span class="line">    WORD    MajorOperatingSystemVersion; <span class="comment">// 所需操作系统主版本号</span></span><br><span class="line">    WORD    MinorOperatingSystemVersion; <span class="comment">// 所需操作系统次版本号</span></span><br><span class="line">    WORD    MajorImageVersion;           <span class="comment">// 用户定义的程序主版本号</span></span><br><span class="line">    WORD    MinorImageVersion;           <span class="comment">// 用户定义的程序次版本号</span></span><br><span class="line">    WORD    MajorSubsystemVersion;       <span class="comment">// 所需子系统的主版本号</span></span><br><span class="line">    WORD    MinorSubsystemVersion;       <span class="comment">// 所需子系统的次版本号</span></span><br><span class="line">    DWORD   Win32VersionValue;           <span class="comment">// 保留值，必须为0</span></span><br><span class="line">    DWORD   SizeOfImage;                 <span class="comment">// 映像装入内存后的总大小</span></span><br><span class="line">    DWORD   SizeOfHeaders;               <span class="comment">// 所有头和节数组的大小</span></span><br><span class="line">    DWORD   CheckSum;                    <span class="comment">// 映像校验和</span></span><br><span class="line">    WORD    Subsystem;                   <span class="comment">// 子系统标识符</span></span><br><span class="line">    WORD    DllCharacteristics;          <span class="comment">// DLL 特性标志</span></span><br><span class="line">    ULONGLONG SizeOfStackReserve;        <span class="comment">// 初始保留堆栈大小</span></span><br><span class="line">    ULONGLONG SizeOfStackCommit;         <span class="comment">// 初始提交堆栈大小</span></span><br><span class="line">    ULONGLONG SizeOfHeapReserve;         <span class="comment">// 初始保留堆大小</span></span><br><span class="line">    ULONGLONG SizeOfHeapCommit;          <span class="comment">// 初始提交堆大小</span></span><br><span class="line">    DWORD   LoaderFlags;                 <span class="comment">// 加载器标志（通常为0）</span></span><br><span class="line">    DWORD   NumberOfRvaAndSizes;         <span class="comment">// 数据目录条目数</span></span><br><span class="line">    IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES]; <span class="comment">// 数据目录数组</span></span><br><span class="line">&#125; IMAGE_OPTIONAL_HEADER, *PIMAGE_OPTIONAL_HEADER;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/12/27/PE%E6%96%87%E4%BB%B6/image-20250921035457880.png" alt="image-20250921035457880"></p>
+<p>PE完整内容</p>
+<p><img src="/2025/12/27/PE%E6%96%87%E4%BB%B6/image-20250921034038120.png" alt="image-20250921034038120"></p>
+<h3 id="节表"><a href="#节表" class="headerlink" title="节表"></a>节表</h3><p>​	节表是存储PE表中所有节的信息。</p>
+<p><img src="/2025/12/27/PE%E6%96%87%E4%BB%B6/image-20250921035702001.png" alt="image-20250921035702001"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_SECTION_HEADER</span> &#123;</span>  </span><br><span class="line">   Name                        <span class="comment">//8个字节的块名  	不能为0</span></span><br><span class="line">   <span class="class"><span class="keyword">union</span>                         </span></span><br><span class="line"><span class="class">   &#123;</span>  </span><br><span class="line">       DWORD PhysicalAddress;  </span><br><span class="line">       DWORD VirtualSize;  <span class="comment">//默认就是这个值		重要</span></span><br><span class="line">   &#125; Misc;                     <span class="comment">//区块尺寸		 </span></span><br><span class="line">   DWORD VirtualAddress;       <span class="comment">//区块的RVA地址    重要</span></span><br><span class="line">   DWORD SizeOfRawData;        <span class="comment">//在文件中对齐后的尺寸  重要</span></span><br><span class="line">   DWORD PointerToRawData;     <span class="comment">//在文件中偏移  	重要</span></span><br><span class="line">   DWORD PointerToRelocations; <span class="comment">//在OBJ文件中使用，重定位的偏移  	重要</span></span><br><span class="line">   DWORD PointerToLinenumbers; <span class="comment">//行号表的偏移（供调试使用地）  </span></span><br><span class="line">   WORD NumberOfRelocations;   <span class="comment">//在OBJ文件中使用，重定位项数目  </span></span><br><span class="line">   WORD NumberOfLinenumbers;   <span class="comment">//行号表中行号的数目  </span></span><br><span class="line">   DWORD Characteristics;      <span class="comment">//区块属性如可读，可写，可执行等  	重要</span></span><br><span class="line">&#125; IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/12/27/PE%E6%96%87%E4%BB%B6/image-20250921040241283.png" alt="image-20250921040241283"></p>
+<p><img src="/2025/12/27/PE%E6%96%87%E4%BB%B6/image-20250920154123951.png" alt="image-20250920154123951"></p>
+<h3 id="C-获取PE文件内容"><a href="#C-获取PE文件内容" class="headerlink" title="C++获取PE文件内容"></a>C++获取PE文件内容</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;Windows.h&gt;</span></span></span><br><span class="line"><span class="function">C</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="type">char</span> exepath[] = <span class="string">&quot;C:\\Users\\admin\\source\\repos\\ConsoleApplication1\\Debug\\ConsoleApplication1.exe&quot;</span>;</span><br><span class="line">	FILE* pfile = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="built_in">fopen_s</span>(&amp;pfile, exepath, <span class="string">&quot;rb&quot;</span>);</span><br><span class="line">	<span class="type">char</span> buf[<span class="number">0x1000</span>];</span><br><span class="line">	<span class="built_in">fread</span>(buf, <span class="number">1</span>, <span class="number">0x1000</span>, pfile);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 获取DOS文件地址</span></span><br><span class="line">	PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)buf;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;pIMAGE_DOS_HEADER-&gt;e_magic:%x\n&quot;</span>, pDosHeader-&gt;e_magic);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;pIMAGE_DOS_HEADER-&gt;e_magic:%x\n&quot;</span>, pDosHeader-&gt;e_lfanew);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// PE文件地址</span></span><br><span class="line">	PIMAGE_NT_HEADERS pPeHeader = (PIMAGE_NT_HEADERS)(buf + pDosHeader-&gt;e_lfanew);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;pPeHeader-&gt;OptionalHeader.Magic:%x\n&quot;</span>, pPeHeader-&gt;OptionalHeader.Magic);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 节表位置 = PE文件地址+ PE签名+文件头+可选头</span></span><br><span class="line">	PIMAGE_SECTION_HEADER pSectionHeader = (PIMAGE_SECTION_HEADER)(</span><br><span class="line">		(BYTE*)pPeHeader +							 <span class="comment">// PE文件地址</span></span><br><span class="line">		<span class="built_in">sizeof</span>(DWORD) +								 <span class="comment">// PE签名</span></span><br><span class="line">		<span class="built_in">sizeof</span>(IMAGE_FILE_HEADER) +					 <span class="comment">// 文件头</span></span><br><span class="line">		pPeHeader-&gt;FileHeader.SizeOfOptionalHeader); <span class="comment">// 可选头</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>
