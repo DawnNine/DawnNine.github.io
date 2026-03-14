@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            汇编环境搭建和学习笔记
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="汇编环境搭建和学习笔记"><a href="#汇编环境搭建和学习笔记" class="headerlink" title="汇编环境搭建和学习笔记"></a>汇编环境搭建和学习笔记</h1><blockquote>
+<p>最近在学汇编，发现Visual Studio 2015汇编环境配置网上很少有人说，怎么配置，整理记录一下，顺便记录一下自己的汇编学习笔记。</p>
+</blockquote>
+<h2 id="软件下载（相关软件为互联网收集整理）"><a href="#软件下载（相关软件为互联网收集整理）" class="headerlink" title="软件下载（相关软件为互联网收集整理）"></a>软件下载（相关软件为互联网收集整理）</h2><blockquote>
+<p>MASM32: <a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1q-0wELLNXknYfPMEDjqAVw?pwd=kegc">https://pan.baidu.com/s/1q-0wELLNXknYfPMEDjqAVw?pwd=kegc</a><br>Visual Studio 2015 : <a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1X-CY-Ne3KU8OpHvPJGfILw?pwd=msj2">https://pan.baidu.com/s/1X-CY-Ne3KU8OpHvPJGfILw?pwd=msj2</a><br>AsmDude: <a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1AMqZzpOxOfEkHxkBR64Yww?pwd=t6uf">https://pan.baidu.com/s/1AMqZzpOxOfEkHxkBR64Yww?pwd=t6uf</a><br> 汇编金手指.exe：<a target="_blank" rel="noopener" href="https://pan.baidu.com/s/16EkhootT8_1njLbXLhuUNA?pwd=87ib">https://pan.baidu.com/s/16EkhootT8_1njLbXLhuUNA?pwd=87ib</a></p>
+</blockquote>
+<p>​	MASM32是一个专门用于32位汇编开发的工具包，Visual Studio要安装C++编程的所有的组件，不要选择默认安装，默认安装会缺少C++相关组件。MASM32安装一路回车，就行没有办法选具体路径只能选择磁盘路径。</p>
+<h2 id="项目创建与配置"><a href="#项目创建与配置" class="headerlink" title="项目创建与配置"></a>项目创建与配置</h2><p>​	1、选择Win32控制台应用程序，下一步空项目、控制台应用</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309141001847.png" alt="image-20260309141001847"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309141153310.png" alt="image-20260309141153310"></p>
+<p>2、添加一个源文件，文件后缀asm，修改入口函数</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309142709497.png" alt="image-20260309142709497"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309142824757.png" alt="image-20260309142824757"></p>
+<p>3、设置附加库目录之前安装masm32的路径，下面的勾要勾上</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309141740812.png" alt="image-20260309141740812"></p>
+<p>4、生成自定义依赖选masm<img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309141919361.png" alt="image-20260309141919361"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309141943379.png" alt="image-20260309141943379"></p>
+<p>5、选择刚才创建好的文件属性，项类型会多一个Microsoft Macro Assembler选择并应用</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309142050017.png" alt="image-20260309142050017"></p>
+<p>6、项目属性会多Microsoft Macro Assembler，选择Include paths把安装的环境中的include填上去<img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309142358109.png" alt="image-20260309142358109"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309142439006.png" alt="image-20260309142439006"></p>
+<p>运行一下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">.386</span><br><span class="line">.model flat, stdcall</span><br><span class="line">option casemap:none</span><br><span class="line"></span><br><span class="line">EXTERN MessageBoxA@16:PROC</span><br><span class="line">EXTERN ExitProcess@4:PROC</span><br><span class="line"></span><br><span class="line">.data</span><br><span class="line">msg     db &quot;Hello from MASM!&quot;,0</span><br><span class="line">caption db &quot;MASM MessageBox&quot;,0</span><br><span class="line"></span><br><span class="line">.code</span><br><span class="line">main PROC</span><br><span class="line">    push 0</span><br><span class="line">    push offset caption</span><br><span class="line">    push offset msg</span><br><span class="line">    push 0</span><br><span class="line">    call MessageBoxA@16</span><br><span class="line">    push 0</span><br><span class="line">    call ExitProcess@4</span><br><span class="line">main ENDP</span><br><span class="line">END main</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309143153016.png" alt="image-20260309143153016"></p>
+<p>当安装了AsmDude会根据你写代码进行高亮显示，没问题运行应该是这样的。</p>
+<h2 id="学习笔记"><a href="#学习笔记" class="headerlink" title="学习笔记"></a>学习笔记</h2><h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><p>二进制后面加B、十六进制加H、八进制加O、十进制加D</p>
+<p>计算机逻辑上划分三条总线：地址总线、数据总线、控制总线</p>
+<p>地址总线：决定了CUP到内存一次性寻址的范围，N根地址总线对应的寻址空间位为2^nB。</p>
+<p>数据总线：决定了CUP到内存一次性传送的数据内容的多少。</p>
+<p>控制总线：决定了CPU对外部器件的控制能力。</p>
+<p>CPU把不同设备的存储器，当成一个逻辑存储器，不同设备的存储器看成一整个。</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309161357719.png" alt="image-20260309161357719"></p>
+<h3 id="寄存器"><a href="#寄存器" class="headerlink" title="寄存器"></a>寄存器</h3><p>​	8086CPU有14个寄存器：AX、BX、CX、DX、SI、DI、SP、BP、IP、CS、DS、SS、ES、PSW。</p>
+<h4 id="通用寄存器"><a href="#通用寄存器" class="headerlink" title="通用寄存器"></a>通用寄存器</h4><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AX</td>
+<td>累加器</td>
+<td>常用于算术运算、I&#x2F;O 操作</td>
+</tr>
+<tr>
+<td>BX</td>
+<td>基址寄存器</td>
+<td>常用于寻址</td>
+</tr>
+<tr>
+<td>CX</td>
+<td>计数寄存器</td>
+<td>常作循环次数计数器</td>
+</tr>
+<tr>
+<td>DX</td>
+<td>数据寄存器</td>
+<td>在一些乘法、除法指令中用于存放高位数据</td>
+</tr>
+</tbody></table>
+<p>通用寄存器AX、BX、CX、DX这四个，这四个可以再拆到8位寄存器AX（AH和AL）、BX（BH和BL）、CX（CH和CL）、DX（DH和DL）。</p>
+<h4 id="指针寄存器"><a href="#指针寄存器" class="headerlink" title="指针寄存器"></a>指针寄存器</h4><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SI</td>
+<td>源变址寄存器</td>
+<td>通常配合 DS 使用，用于字符串或数组读取</td>
+</tr>
+<tr>
+<td>DI</td>
+<td>目的变址寄存器</td>
+<td>通常配合 ES 使用，用于字符串或数组写入。</td>
+</tr>
+</tbody></table>
+<h4 id="变址寄存器"><a href="#变址寄存器" class="headerlink" title="变址寄存器"></a>变址寄存器</h4><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SP</td>
+<td>栈指针寄存器</td>
+<td>指向当前栈顶，用于 push、pop等栈操作</td>
+</tr>
+<tr>
+<td>BP</td>
+<td>基址指针</td>
+<td>访问栈中数据（比如函数参数、局部变量）</td>
+</tr>
+</tbody></table>
+<p>指令指针寄存器</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IP</td>
+<td>指令指针</td>
+<td>存放下一条要执行的指令的偏移地址</td>
+</tr>
+</tbody></table>
+<h4 id="段寄存器"><a href="#段寄存器" class="headerlink" title="段寄存器"></a>段寄存器</h4><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CS</td>
+<td>代码段寄存器</td>
+<td>程序指令所在的段基址</td>
+</tr>
+<tr>
+<td>DS</td>
+<td>数据段寄存器</td>
+<td>一般数据所在段的基址</td>
+</tr>
+<tr>
+<td>SS</td>
+<td>堆栈段寄存器</td>
+<td>栈在内存中的段基址</td>
+</tr>
+<tr>
+<td>ES</td>
+<td>附加段寄存器</td>
+<td>常用于字符串传送等操作的目的段</td>
+</tr>
+</tbody></table>
+<h4 id="标志寄存器"><a href="#标志寄存器" class="headerlink" title="标志寄存器"></a>标志寄存器</h4><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PSW（FLAGS寄存器）</td>
+<td>保存各种状态标志，用以反映或控制CPU的运行状态</td>
+</tr>
+</tbody></table>
+<h3 id="汇编语言笔记"><a href="#汇编语言笔记" class="headerlink" title="汇编语言笔记"></a>汇编语言笔记</h3><h4 id="字在寄存器中存储"><a href="#字在寄存器中存储" class="headerlink" title="字在寄存器中存储"></a>字在寄存器中存储</h4><p>8086是16位CPU，字长是16bit，为了兼容之前的8位寄存器，当16位存储的时候分为高位字节和低位字节</p>
+<h4 id="几条汇编指令"><a href="#几条汇编指令" class="headerlink" title="几条汇编指令"></a>几条汇编指令</h4><p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309164603511.png" alt="image-20260309164603511"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309165343070.png" alt="image-20260309165343070"></p>
+<p>此时al的值为C5H，执行add al,93H 相加后等于158，但是应为al为低8位所以al的值位58。</p>
+<h4 id="8086CUP给出物理地址的方法"><a href="#8086CUP给出物理地址的方法" class="headerlink" title="8086CUP给出物理地址的方法"></a>8086CUP给出物理地址的方法</h4><p>8086CPU一共有20位地址总线，可以传输20位的地址，8086是16位结构，内部一次处理地址最多为16位。无法一次性直接传输20位的地址，解决办法是用两个16位地址（段地址、偏移地址）合成一个二十位的地址。</p>
+<p>物理地址&#x3D;段地址*16+偏移地址</p>
+<blockquote>
+<p>乘16是左移4位地址+偏移地址等于物理地址</p>
+</blockquote>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309200209239.png" alt="image-20260309200209239"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309200246983.png" alt="image-20260309200246983"></p>
+<h4 id="CS-IP计算"><a href="#CS-IP计算" class="headerlink" title="CS:IP计算"></a>CS:IP计算</h4><p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309210023725.png" alt="image-20260309210023725"></p>
+<p>比如说这个，如果要执行下一条指令CS（代码段寄存器）当前地址位2000，IP（地址指令指针）要加上3。mov ax，0123H占了3个bit，通过读取改地址段（B82301）通过数据总线传输，交由执行控制器进行执行。</p>
+<blockquote>
+<p>内存bit计算：ax占一个字节，0123H为16位，低位是23高位是1。<br>例：1、mov al,023H，al为8位寄存器只占1个字节，23H也是只占一个字节，共占3个字节<br>2、 mov bx,023H，bx占1字节，23H占2个字节，因为bx为16位寄存器，023H高位要补0。</p>
+</blockquote>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309210757195.png" alt="image-20260309210757195"></p>
+<h4 id="jmp指令"><a href="#jmp指令" class="headerlink" title="jmp指令"></a>jmp指令</h4><p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260309212232084.png" alt="image-20260309212232084"></p>
+<p>当成CS（代码段寄存器）为20000H，IP为0</p>
+<p>1、会执行mov ax，6622H</p>
+<p>2、执行jmp 1000:3 （发生跳转CS地址改为1000，IP地址改为3）</p>
+<p>3、执行mov ax,0000</p>
+<p>4、执行 mov bx,ax (bx的值为0，ax的值为0)</p>
+<p>5、执行jmp bx （此时bx的值为0，IP的值为0008H，因为他会跳转到bx的地址0，IP的值会变成0，下一步会执行10000H）</p>
+<p>6、执行mov ax,0123H</p>
+<p>7、执行mov ax,0000(死循环)</p>
+<h3 id="寄存器（内存访问）"><a href="#寄存器（内存访问）" class="headerlink" title="寄存器（内存访问）"></a>寄存器（内存访问）</h3><h4 id="jmp、mov-、add、sub指令"><a href="#jmp、mov-、add、sub指令" class="headerlink" title="jmp、mov 、add、sub指令"></a>jmp、mov 、add、sub指令</h4><p>​	jmp：无条件地控制程序转移到目的地址去执行.当目的地址仍在同一个代码段内,称为段内转移;当目标地址不在同一个代码段内,则称为段间转移。</p>
+<blockquote>
+<p>如图2.27把1003H-06H封装成一个函数function01，jmp 1000:3&#x3D;jmp function01，此时cs的地址改变位函数基地址，IP为内存长度。</p>
+</blockquote>
+<p>mov  将一个源操作数送到目的操作数中</p>
+<blockquote>
+<p>如 mov al,028H</p>
+</blockquote>
+<p>add  两数相加</p>
+<blockquote>
+<p>add bl,al</p>
+</blockquote>
+<p>sub 两个操作数的相减</p>
+<blockquote>
+<p>sub bl,bl</p>
+</blockquote>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310090104398.png" alt="image-20260310090104398"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310090125683.png" alt="image-20260310090125683"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310090139969.png" alt="image-20260310090139969"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310090159024.png" alt="image-20260310090159024"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310090208215.png" alt="image-20260310090208215"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">.386</span><br><span class="line">.model flat, c</span><br><span class="line">option casemap:none</span><br><span class="line"></span><br><span class="line">include windows.inc</span><br><span class="line">include kernel32.inc</span><br><span class="line">include msvcrt.inc</span><br><span class="line"></span><br><span class="line">includelib kernel32.lib</span><br><span class="line">includelib msvcrt.lib</span><br><span class="line"></span><br><span class="line">.data</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">.code</span><br><span class="line">main PROC</span><br><span class="line">	xor eax,eax</span><br><span class="line">	xor ebx,ebx</span><br><span class="line">	mov al,012H</span><br><span class="line">	add bl,al</span><br><span class="line">	sub bl,bl</span><br><span class="line">	invoke ExitProcess, 0</span><br><span class="line">main ENDP</span><br><span class="line">END main</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>​	EAX为32位寄存器，8086CPU是16位，EAX分为两大部分，前16位没有定义，后16位为AX，后16位分为AH，AL。</p>
+<h4 id="栈"><a href="#栈" class="headerlink" title="栈"></a>栈</h4><p>栈是先进的后出，后进的先出。</p>
+<p>计算机把一块内存区域化成栈进行使用，使用SS(栈段寄存器)来存放栈顶的段地址，使用SP(栈顶指针寄存器)存放栈顶的偏移地址。</p>
+<p>如当使用push ax时会根据入栈存储的大小来改变SP的值，当push ax入栈时ESP的会减少两个字节（ 00D3 FC94-00D3FC92）</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310163625702.png" alt="image-20260310163625702"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310163718446.png" alt="image-20260310163718446"></p>
+<h3 id="源程序分析"><a href="#源程序分析" class="headerlink" title="源程序分析"></a>源程序分析</h3><h4 id="寄存器分析"><a href="#寄存器分析" class="headerlink" title="寄存器分析"></a>寄存器分析</h4><p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310201418036.png" alt="image-20260310201418036"></p>
+<p>​	DS为数据寄存器，CS为代码寄存器。他们相差10H，在数据的物理地址12AEH*16-129EH*16&#x3D;100H，一共是256个字节的来存放程序段前缀(PSP)，作为数据区。</p>
+<h4 id="使用"><a href="#使用" class="headerlink" title="[]使用"></a>[]使用</h4><p>[]是绝对与DS的物理地址里面的内容（取内存中内容），一般是要加上段前缀，如”ds:”、”cs:”、”ss:”、”es:”。</p>
+<blockquote>
+<p>例：1、mov ax, bx，是把bx里面的值取出来放到ax里面、</p>
+<p>2、mov ax, [bx]，先算出DS的物理地址，如果DS等于1000H，bx的值为0028H，此时[bx]&#x3D;(DS*16)+BX&#x3D;10026H</p>
+</blockquote>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310203540712.png" alt="image-20260310203540712"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260310203246177.png" alt="image-20260310203246177"></p>
+<h4 id="loop指令"><a href="#loop指令" class="headerlink" title="loop指令"></a>loop指令</h4><p>loop指令是循环指令，当执行到它是首选把CX寄存器里面的值-1，再判断CX的值是否不等于零，不等于零跳转执行，等于零向下执行。32位不允许直接CS:[eax],这样操作</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">.386</span><br><span class="line">.model flat, c</span><br><span class="line">option casemap:none</span><br><span class="line"></span><br><span class="line">include kernel32.inc</span><br><span class="line"></span><br><span class="line">includelib kernel32.lib</span><br><span class="line"></span><br><span class="line">.data</span><br><span class="line">array	dw 0123H,0456H,0678H,0789H</span><br><span class="line"></span><br><span class="line">.code</span><br><span class="line">main PROC</span><br><span class="line">	xor ebx,ebx</span><br><span class="line">	xor eax,eax</span><br><span class="line">	xor ecx,ecx</span><br><span class="line"></span><br><span class="line">	mov cx,3</span><br><span class="line">s:  add ax,[array + ebx] </span><br><span class="line">	add ebx,2</span><br><span class="line">	loop s</span><br><span class="line"></span><br><span class="line">	invoke ExitProcess, 0</span><br><span class="line">main ENDP</span><br><span class="line">END main</span><br></pre></td></tr></table></figure>
+
+<h3 id="更灵活的定位内存地址的方法"><a href="#更灵活的定位内存地址的方法" class="headerlink" title="更灵活的定位内存地址的方法"></a>更灵活的定位内存地址的方法</h3><h4 id="and、or指令和si、di寄存器"><a href="#and、or指令和si、di寄存器" class="headerlink" title="and、or指令和si、di寄存器"></a>and、or指令和si、di寄存器</h4><p>and，对两个操作数实现按位逻辑与运算，相同为1不同为0</p>
+<blockquote>
+<p>and al,bl </p>
+</blockquote>
+<p>or，指令完成对两个操作数按位的，同时为0，结果为0，任意一方为1时，结果为1</p>
+<blockquote>
+<p>or al,bl</p>
+</blockquote>
+<p>si（源变址寄存器）指向要显示的字符</p>
+<p>di（目标变址寄存器）指向要存放的位置（目的空间）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">.386</span><br><span class="line">.model flat, c</span><br><span class="line">option casemap:none</span><br><span class="line"></span><br><span class="line">include windows.inc</span><br><span class="line">include kernel32.inc</span><br><span class="line">includelib kernel32.lib</span><br><span class="line">;数据拷贝</span><br><span class="line">.data</span><br><span class="line">array   db  &#x27;welcome to masm!&#x27;, 0</span><br><span class="line">array01 db  &#x27;.............&#x27;, 0</span><br><span class="line"></span><br><span class="line">.code</span><br><span class="line">main PROC</span><br><span class="line">	mov esi, OFFSET array      </span><br><span class="line">    mov edi, OFFSET array01  </span><br><span class="line">    mov ecx, LENGTHOF array  </span><br><span class="line">    </span><br><span class="line">convertLoop:</span><br><span class="line">    mov al, [esi]            </span><br><span class="line">    mov [edi], al            </span><br><span class="line">    inc esi                  </span><br><span class="line">    inc edi                  </span><br><span class="line">    loop convertLoop         </span><br><span class="line"></span><br><span class="line">    invoke ExitProcess, 0</span><br><span class="line">main ENDP</span><br><span class="line">END main</span><br></pre></td></tr></table></figure>
+
+<h4 id="内存寻址"><a href="#内存寻址" class="headerlink" title="内存寻址"></a>内存寻址</h4><p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260311205256534.png" alt="image-20260311205256534"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260311210327998.png" alt="image-20260311210327998"></p>
+<h4 id="div指令和数据大小定义、dup"><a href="#div指令和数据大小定义、dup" class="headerlink" title="div指令和数据大小定义、dup"></a>div指令和数据大小定义、dup</h4><h5 id="div指令"><a href="#div指令" class="headerlink" title="div指令"></a>div指令</h5><p>div实现两个无符号二进制数除法运算。除以8位除数时，商应该放到al里，余数放到ah。除以16位商放到ax里，余数放到dx里。（除数默认放到ax里或dx里）</p>
+<blockquote>
+<p>比如说 100001&#x2F;100。100001D&#x3D;186A1H   100D&#x3D;64H要放到两个寄存器中</p>
+<p>1、mov dx,1； 2、 mov ax,86A1  ；3、mov bx,64 ；1和2是放除数、3是进行除</p>
+</blockquote>
+<h5 id="数据大小定义"><a href="#数据大小定义" class="headerlink" title="数据大小定义"></a>数据大小定义</h5><p>db是定义一个字节，字节型数据</p>
+<p>dw是定义两个字节，字型数据</p>
+<p>dd是定义四个字节，双字数据</p>
+<h5 id="dup"><a href="#dup" class="headerlink" title="dup"></a>dup</h5><p>dup类似于数组  test dw 3 dum(0)；</p>
+<blockquote>
+<p>定义test变量，里面为3个字符数据，初始化为0</p>
+</blockquote>
+<h4 id="转移指令的原理"><a href="#转移指令的原理" class="headerlink" title="转移指令的原理"></a>转移指令的原理</h4><p>转移分为两大类段外转移，段内转移。区别只修改IP称为段内转移，jmp ax；同时修改CS和IP时称为段间转移，jmp 1000:0</p>
+<p>段内转移访分为短转移和远转移。短转移IP修改范围-128-127；远转移修改范围-32768-32767之间。</p>
+<p>jmp指令:依据位移进行转移，机器码：EA代表段间转移，EB是短跳转</p>
+<h6 id="转移"><a href="#转移" class="headerlink" title="转移"></a>转移</h6><p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313094530594.png" alt="image-20260313094530594"></p>
+<p>1、当寄存器读取到jmp时，ip&#x3D;0003时要加载jmp short s，内存长度为2，此时ip&#x3D;0005，把EB05加载到指令缓存器中，EB是短跳转，05代表要跳转的偏移量</p>
+<p>2、此时IP&#x3D;0005+05&#x3D;000A ，所以下一步要执行的是inc AX。</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313095809845.png" alt="image-20260313095809845"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313102731997.png" alt="image-20260313102731997"></p>
+<p>远转移会把CS和IP直接写到内存中，EA 0B01 6A07 ，EA代表段间转移，0B01是IP的地址、6A07是CS的地址 </p>
+<h4 id="jcmx指令"><a href="#jcmx指令" class="headerlink" title="jcmx指令"></a>jcmx指令</h4><p>jcmx 功能: 当CX&#x3D;0时转移到由Label指定的目标地址。短转移，机器码：E3</p>
+<blockquote>
+<p>jcmx s</p>
+</blockquote>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313105816532.png" alt="image-20260313105816532"></p>
+<h4 id="loop指令-1"><a href="#loop指令-1" class="headerlink" title="loop指令"></a>loop指令</h4><p> loop功能: (CX)&lt;–(CX)-1,(CX)&lt;&gt;0,则转移至标号处循环执行, 直至(CX)&#x3D;0,继续执行后继指。机器码：E2</p>
+<blockquote>
+<p>loop s</p>
+</blockquote>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313110631398.png" alt="image-20260313110631398"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313110843737.png" alt="image-20260313110843737"></p>
+<h4 id="call指令和ret、retf指令"><a href="#call指令和ret、retf指令" class="headerlink" title="call指令和ret、retf指令"></a>call指令和ret、retf指令</h4><p>call 功能: 过程调用指令(默认段内调用)，如果是段内调用改变了ip，只需要把ip压入栈中保存。机器码：E8。如果是远调用进行段间转移改变了cs和ip的值，原始的cs和ip的值会放入栈中进行保存。机器码：9A（call far ptr 要加关键字）</p>
+<blockquote>
+<p>call s</p>
+</blockquote>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313113904464.png" alt="image-20260313113904464"></p>
+<p>call是段间调用会先把ip压入栈中，</p>
+<p>ret功能: 当调用的过程结束后实现从过程返回至原调用程序的下一条指令，这个就相当于pop ip，把ip的值修改了从栈中抛出一个值赋值给ip。</p>
+<p>retf功能: 当调用的过程结束后实现从过程返回至源调用指令的cs和ip，这个就相当于 pop cs pop ip，改变了两个值。</p>
+<h4 id="mul指令"><a href="#mul指令" class="headerlink" title="mul指令"></a>mul指令</h4><p>mul指令操作：乘法操作。如果是8位乘法被乘数放到al，乘数是寄存器或内存单元，结果返回AX。如果是16位乘法被乘数放到AX里面，乘数是寄存器或内存单元，结果高位返回DX地位返回AX</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313141050255.png" alt="image-20260313141050255"></p>
+<h4 id="模块化程序设计"><a href="#模块化程序设计" class="headerlink" title="模块化程序设计"></a>模块化程序设计</h4><p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313145754939.png" alt="image-20260313145754939"></p>
+<h4 id="标志寄存器-1"><a href="#标志寄存器-1" class="headerlink" title="标志寄存器"></a>标志寄存器</h4><p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313150708330.png" alt="image-20260313150708330"></p>
+<h5 id="adc带进位加法指令"><a href="#adc带进位加法指令" class="headerlink" title="adc带进位加法指令"></a>adc带进位加法指令</h5><p>adc是带进位加法指令，它利用了CF位上记录的进位值。</p>
+<blockquote>
+<p>adc ax ,1  ;此时ax等于2，CF等于1。最终ax&#x3D;2+1+1&#x3D;4 ；只要执行了adc指令就自动获取CF的值进行相加</p>
+</blockquote>
+<h5 id="sbb带借位减法指令"><a href="#sbb带借位减法指令" class="headerlink" title="sbb带借位减法指令"></a>sbb带借位减法指令</h5><p>sbb是带进位减法指令，它利用了CF位上记录的进位值。与adc相反</p>
+<blockquote>
+<p>sbb ax ,1  ;此时ax等于2，CF等于1。最终ax&#x3D;2-1-1&#x3D;0；只要执行了sbb指令就自动获取CF的值进行相减</p>
+</blockquote>
+<h5 id="cmp指令"><a href="#cmp指令" class="headerlink" title="cmp指令"></a>cmp指令</h5><p>cmp是比较指令，相当于减法指令，不保存结果只影响标志寄存器里面的值。</p>
+<h5 id="条件转移指令的使用"><a href="#条件转移指令的使用" class="headerlink" title="条件转移指令的使用"></a>条件转移指令的使用</h5><p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313155205404.png" alt="image-20260313155205404"></p>
+<h5 id="DF标志和串传送指令"><a href="#DF标志和串传送指令" class="headerlink" title="DF标志和串传送指令"></a>DF标志和串传送指令</h5><p>DF默认时0，为正向传输。手动设置传输方向；需要正向传送时，用 cld 清方向标志。需要反向传送时，用 std 置方向标志。</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260313163007662.png" alt="image-20260313163007662"></p>
+<h5 id="movsb指令"><a href="#movsb指令" class="headerlink" title="movsb指令"></a>movsb指令</h5><p>movsb作用，按照字节位单位进行循环传送到目标的变量中（ex(附加段寄存器)*16+di（目的便地址寄存器））。</p>
+<p>movsw指令</p>
+<p>movsw和movsb一样只不过循环传送的单位不一样。</p>
+<h4 id="移位指令"><a href="#移位指令" class="headerlink" title="移位指令"></a>移位指令</h4><p>shl、rol、shr、ror、sal、sar、rcl、rcr，这些寄存器移动时大于1时，必须用cl来保存相关进位。</p>
+<p>shl （逻辑左移）功能: 对给定的目的操作数左移COUNT次,每次移位时最高位移入标志位CF中,最低位补零.</p>
+<blockquote>
+<p>shl al 1</p>
+</blockquote>
+<p>rol（循环左移）功能:对给顶的目标的操作数左移count次，每次移位时最高位移入标注位CF，最低位通用移入最高位的值。</p>
+<blockquote>
+<p>rol al,1</p>
+</blockquote>
+<p>shr（逻辑右移）对给定的目的操作数右移COUNT次,每次移位时最低位移入CF位。高位补零。</p>
+<blockquote>
+<p>shr al,1</p>
+</blockquote>
+<p>ror（循环右移）功能:对给顶的目标的操作数右移count次，每次移位时最低位移入标注位CF，最高位通用移入最低位的值。</p>
+<blockquote>
+<p>ror al,1</p>
+</blockquote>
+<p>sal（算数左移） 功能:本指令与SHL的功能也完全相同,这是因为逻辑左   符号可能发生变化。</p>
+<blockquote>
+<p>sal al,1</p>
+</blockquote>
+<p>sar（算数右移） 功能: 本指令通常用于对带符号数减半的运算中,因而在每次右移时,保持最高位(符号位)—  不变,最低位右移至CF中.</p>
+<blockquote>
+<p>sar al,1</p>
+</blockquote>
+<p>rcl（带进位循环左移）功能：把最高位的值转到CF，原本的CF数值补到低位。</p>
+<blockquote>
+<p>rcl al ,1</p>
+</blockquote>
+<p>rcl（带进位循环左移）功能：把最低位的值转到CF，原本的CF数值补到高位。</p>
+<blockquote>
+<p>rcl al,1</p>
+</blockquote>
+<h5 id="直接定址表"><a href="#直接定址表" class="headerlink" title="直接定址表"></a>直接定址表</h5><p>通过求得相对于字符表得偏移量，来获取得相对应得字符</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260314092822566.png" alt="image-20260314092822566"></p>
+<h4 id="中断及其处理"><a href="#中断及其处理" class="headerlink" title="中断及其处理"></a>中断及其处理</h4><p>中断：CPU不再接着（刚执行完的指令）向下执行，而是转去处理中断信息。</p>
+<p>内中断：由CPU内部发生的事件而引起的中断</p>
+<p>外中断：由外部设备发生的事件引起的中断</p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260314101953585.png" alt="image-20260314101953585"></p>
+<p><img src="/2026/03/09/%E6%B1%87%E7%BC%96%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%92%8C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/image-20260314104720469.png" alt="image-20260314104720469"></p>
+<p>​	中断向量表是常驻在内存中的，并且每一个中断IVT是唯一的，当如果有两个程序A、B。同时对中断向量表中的123号中断器，后者会把前者写的中断函数给覆盖，导致失效。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>​	整个笔记是跟着王爽老师书来学的，课程是听贺利坚老师进行讲的（B站就有）。大概用时5-6天的时间从头到尾学了一边，学了以后感觉对整个计算机运行原理更加清晰了，起码能看懂代码了。这一块的难点可能在于寄存器的使用，那个指令要用的那个寄存器，比如说mul指令，要分析清楚当前的16位乘法还是8位乘法，使用的寄存器不同，乘出来的结果保存位置也不同。同样过于生硬了这些汇编代码，各种寄存器相互调用，可读性特别特别差。</p>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>
