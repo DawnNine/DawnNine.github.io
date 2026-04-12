@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            植物大战僵尸游戏分析
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="植物大战僵尸游戏分析"><a href="#植物大战僵尸游戏分析" class="headerlink" title="植物大战僵尸游戏分析"></a>植物大战僵尸游戏分析</h1><blockquote>
+<p>学会了汇编还有基本的程序分析以后想分析什么，网上很多分析植物大战僵尸，我要跟风嘿嘿。<br>CE下载地址 <a target="_blank" rel="noopener" href="https://www.cheatengine.org/">https://www.cheatengine.org/</a></p>
+</blockquote>
+<h2 id="分析思路"><a href="#分析思路" class="headerlink" title="分析思路"></a>分析思路</h2><p>​	作弊器的原理就是找到对应数值在内存中存储的位置，比如说植物大战僵尸里面的金币数量，这个数量是存储在一块内存中。如何找到这块内存是关键。</p>
+<h3 id="物理内存和虚拟内存"><a href="#物理内存和虚拟内存" class="headerlink" title="物理内存和虚拟内存"></a>物理内存和虚拟内存</h3><p>​	物理内存：就是电脑上插的内存条。<strong>缺点</strong>：由于直接加载物理地址会导致：地址冲突、内存不足时无法运行、容易相互覆盖数据并且上面的都是连续的。</p>
+<p>​	虚拟内存：一种内存管理策略，它为用户呈现出一个“看起来很大”的内存空间。通过虚拟内存机制，操作系统可以将一部分物理内存的内容临时交换到硬盘上，从而让程序感觉自己拥有比实际物理内存大得多的可用内存。</p>
+<p>​	<strong>虚拟内存解决了物理内粗的问题</strong>：让每个程序以为自己拥有一块连续、完整的内存空间（称为“虚拟地址空间”），实际上这些地址由操作系统通过内存管理单元 (MMU) *映射到真实的物理内存。</p>
+<h3 id="程序运行。"><a href="#程序运行。" class="headerlink" title="程序运行。"></a>程序运行。</h3><p>​	加载：系统创建一个新的进程，为它分配独立的虚拟地址空间。游戏的各部分映射到虚拟内存中。</p>
+<p>​	执行：CPU 执行指令时，从虚拟地址取指令 → 翻译成物理地址 → 访问真正的内存条。</p>
+<p>​	我们在用Cheat Engine来找的地址是虚拟地址，虚拟地址会交给cpu去处理，然后映射出对应的物理地址，并且每次程序运行时，操作系统都会重新建立物理内存和虚拟内存的映射关系，哪段物理内存空闲就用哪一段。</p>
+<h3 id="实验步骤"><a href="#实验步骤" class="headerlink" title="实验步骤"></a>实验步骤</h3><p>1、确定修改目标，例如，游戏中的金钱数值。<br>2、使用Cheat Engine进行首次扫描。<br>3、通过改变值状态，进行第二轮扫描。<br>4、分析结果，定位目标数据地址。<br>5、修改地址中存储的数值以实现修改。</p>
+<h2 id="关键数值定位"><a href="#关键数值定位" class="headerlink" title="关键数值定位"></a>关键数值定位</h2><p>​	将植物大战僵尸得软件运行起来添加到CE</p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405140309077.png" alt="image-20260405140309077"></p>
+<h2 id="阳关分析"><a href="#阳关分析" class="headerlink" title="阳关分析"></a>阳关分析</h2><p>​	因为阳光得初始值为50进行精确扫描定位到阳光存储得虚拟位置</p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405140548226.png" alt="image-20260405140548226"></p>
+<p>​	改变相关数值目前阳光数量变成0，再次搜索0。</p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405140731318.png" alt="image-20260405140731318"></p>
+<p>​	通过修改该虚拟地址的数字确认是阳光的值。地址42A60588</p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405141214539.png" alt="image-20260405141214539"></p>
+<p>​	返回主页重新打开该关卡发现地址42A60588的值为5000阳光的值为50初始值。推测每一次进游戏会重新创建一个线程，线程会单独运行一个函数，函数中保存阳光的地址变了，不改变原来的值没有用了。</p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405141304977.png" alt="image-20260405141304977"></p>
+<p>​	按照上述步骤重复找到阳光的初始地址为42A35590，它的生成过程依赖于一个固定的模块基址以及若干固定偏移值，其中基址相对于程序的起始位置保持不变，偏移量在各次运行之间也一致。这意味着阳光数据在内存中的定位可由「模块基址 + 固定偏移」唯一确定。</p>
+<p>目前的思路是来找基址和偏移量</p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405142456719.png" alt="image-20260405142456719"></p>
+<p>​	 42A35590的值肯定是一个赋值操作，只看mov就可以了，eax的值是由edi+00005578， edi&#x3D;42A30018。接下来去找edi的值是从那个地方进行赋值。</p>
+<blockquote>
+<p>偏移一：mov eax,[edi+00005578] </p>
+</blockquote>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405143125935.png" alt="image-20260405143125935"></p>
+<p>​	还是比较多的，这个就需要大概判断一下，很多连续的不用看因为连续的一般是数组，找一些地址不联系的，这里我确定edi的地址是013DB340。ESI&#x3D;013DAAD8</p>
+<blockquote>
+<p>偏移二  mov edi,[esi+00000868]  </p>
+</blockquote>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405143357971.png" alt="image-20260405143357971"></p>
+<p>​	寻找ESI再哪里进行赋值，优先看绿色，因为绿色是放到数据块中的数据是静态的。确定了ESI的值是由静态数值00755F28进行赋值的。</p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405143721456.png" alt="image-20260405143721456"></p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405143451608.png" alt="image-20260405143451608"></p>
+<blockquote>
+<p>偏移一：mov eax,[edi+00005578] </p>
+<p>偏移二  mov edi,[esi+00000868]  </p>
+<p>值：ESI 00755F28</p>
+<p>阳光的地址&#x3D; 00755F28 + 00000868 + 00005578</p>
+</blockquote>
+<p>通过指针设置偏移验证过程阳光值一样，重新进入关卡查看能否动态的指向阳光，发现一致。</p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405144355521.png" alt="image-20260405144355521"></p>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405144540640.png" alt="image-20260405144540640"></p>
+<h2 id="植物卡槽栏CD分析"><a href="#植物卡槽栏CD分析" class="headerlink" title="植物卡槽栏CD分析"></a>植物卡槽栏CD分析</h2><p>​	通过释放卡槽的植物，来不断的使用递增方式来找到卡槽一二的地址。卡槽一42A27CCC；卡槽二42A27D1C，两个相差0x50推测第三个卡槽42A27D6C，直接添加地址对应的上。当数值大于某个值时就视为冷却好了，将值都锁定为50000毫秒，可以实现无CD种植。</p>
+<blockquote>
+<p>卡槽一CD地址：00755F28 +868 +15C +4C 首个每个卡槽冷却相隔0x50</p>
+<p>卡槽二CD地址：00755F28 +868 +15C +9C</p>
+</blockquote>
+<p><img src="/2026/04/05/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8%E5%88%86%E6%9E%90/image-20260405150853489.png" alt="image-20260405150853489"></p>
+<p>​	在分析其他的时候发现有一个师傅已经分析过了<a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1816644-1-1.html%EF%BC%8C%E5%8F%AF%E4%BB%A5%E5%8E%BB%E7%9C%8B%E4%B8%80%E4%B8%8B%E3%80%82%E5%A5%BD%E5%83%8F%E6%97%B6%E5%90%8C%E4%B8%80%E4%B8%AA%E6%B8%B8%E6%88%8F%E4%BD%86%E6%98%AF%E5%9F%BA%E5%9C%B0%E5%9D%80%E4%B8%8D%E4%B8%80%E6%A0%B7%E3%80%82">https://www.52pojie.cn/thread-1816644-1-1.html，可以去看一下。好像时同一个游戏但是基地址不一样。</a></p>
+<p>​	现在已经获取到了虚拟地址让他动态不停的修改冷却值可以达到无CD的效果。</p>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;windows.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tlhelp32.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取进程 PID</span></span><br><span class="line"><span class="function">DWORD <span class="title">GetProcessID</span><span class="params">(<span class="type">const</span> <span class="type">wchar_t</span>* processName)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	HANDLE snapshot = <span class="built_in">CreateToolhelp32Snapshot</span>(TH32CS_SNAPPROCESS, <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> (snapshot == INVALID_HANDLE_VALUE)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	PROCESSENTRY32 pe32 = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">	pe<span class="number">32.</span>dwSize = <span class="built_in">sizeof</span>(pe32);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">Process32First</span>(snapshot, &amp;pe32))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">do</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (<span class="built_in">wcscmp</span>(pe<span class="number">32.</span>szExeFile, processName) == <span class="number">0</span>)</span><br><span class="line">			&#123;</span><br><span class="line">				DWORD pid = pe<span class="number">32.</span>th32ProcessID;</span><br><span class="line">				<span class="built_in">CloseHandle</span>(snapshot);</span><br><span class="line">				<span class="keyword">return</span> pid;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">while</span> (<span class="built_in">Process32Next</span>(snapshot, &amp;pe32));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">CloseHandle</span>(snapshot);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">// 获取进程</span></span><br><span class="line">	DWORD processID = <span class="built_in">GetProcessID</span>(<span class="string">L&quot;PlantsVsZombies.exe&quot;</span>);</span><br><span class="line">	<span class="keyword">if</span> (processID == <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		cout &lt;&lt; <span class="string">&quot;未找到进程！&quot;</span> &lt;&lt; endl;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	HANDLE hProcess = <span class="built_in">OpenProcess</span>(PROCESS_ALL_ACCESS, FALSE, processID);</span><br><span class="line">	<span class="keyword">if</span> (!hProcess)</span><br><span class="line">	&#123;</span><br><span class="line">		cout &lt;&lt; <span class="string">&quot;无法打开进程！&quot;</span> &lt;&lt; endl;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ===================== 阳光地址计算 =====================</span></span><br><span class="line">	DWORD basePtr = <span class="number">0x00755F28</span>;</span><br><span class="line">	DWORD offset_1 = <span class="number">0x00000868</span>;</span><br><span class="line">	DWORD offset_2 = <span class="number">0x00005578</span>;</span><br><span class="line"></span><br><span class="line">	DWORD addrLevel1 = <span class="number">0</span>;</span><br><span class="line">	<span class="built_in">ReadProcessMemory</span>(hProcess, (LPCVOID)basePtr, &amp;addrLevel1, <span class="built_in">sizeof</span>(addrLevel1), <span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">	DWORD addrLevel2 = <span class="number">0</span>;</span><br><span class="line">	<span class="built_in">ReadProcessMemory</span>(hProcess, (LPCVOID)(addrLevel1 + offset_1), &amp;addrLevel2, <span class="built_in">sizeof</span>(addrLevel2), <span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">	DWORD sunValue = <span class="number">0</span>;</span><br><span class="line">	<span class="built_in">ReadProcessMemory</span>(hProcess, (LPCVOID)(addrLevel2 + offset_2), &amp;sunValue, <span class="built_in">sizeof</span>(sunValue), <span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">	cout &lt;&lt; <span class="string">&quot;[阳光数值] &quot;</span> &lt;&lt; sunValue &lt;&lt; endl;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ===================== 植物卡槽冷却（CD）读取 =====================</span></span><br><span class="line">	<span class="comment">// 冷却地址链：00755F28 + 868 + 15C + 4C</span></span><br><span class="line">	<span class="comment">// 每个卡槽间隔 0x50</span></span><br><span class="line">	DWORD addrCooldownBase = <span class="number">0</span>;             <span class="comment">// 基于 (+868 +15C)</span></span><br><span class="line">	<span class="built_in">ReadProcessMemory</span>(hProcess, (LPCVOID)(addrLevel2 + <span class="number">0x15C</span>), &amp;addrCooldownBase, <span class="built_in">sizeof</span>(addrCooldownBase), <span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">	DWORD firstSlotAddr = <span class="number">0</span>;                <span class="comment">// (+4C) 第一个卡槽地址</span></span><br><span class="line">	<span class="built_in">ReadProcessMemory</span>(hProcess, (LPCVOID)(addrCooldownBase + <span class="number">0x4C</span>), &amp;firstSlotAddr, <span class="built_in">sizeof</span>(firstSlotAddr), <span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">	cout &lt;&lt; <span class="string">&quot;[第 1 个卡槽冷却值] &quot;</span> &lt;&lt; firstSlotAddr &lt;&lt; endl;</span><br><span class="line">	<span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 遍历所有卡槽冷却值（每个间隔 0x50）</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++)</span><br><span class="line">		&#123;</span><br><span class="line">			DWORD cdValue = <span class="number">0</span>;</span><br><span class="line">			<span class="type">uintptr_t</span> cardSlotAddr = addrCooldownBase + <span class="number">0x4C</span> + (i * <span class="number">0x50</span>);</span><br><span class="line"></span><br><span class="line">			<span class="comment">// 先读取当前冷却值</span></span><br><span class="line">			<span class="built_in">ReadProcessMemory</span>(hProcess, (LPCVOID)cardSlotAddr, &amp;cdValue, <span class="built_in">sizeof</span>(cdValue), <span class="literal">nullptr</span>);</span><br><span class="line">			<span class="comment">// 写入新的冷却值（示例设为 5000）</span></span><br><span class="line">			DWORD newValue = <span class="number">5000</span>;</span><br><span class="line">			BOOL success = <span class="built_in">WriteProcessMemory</span>(hProcess, (LPVOID)cardSlotAddr, &amp;newValue, <span class="built_in">sizeof</span>(newValue), <span class="literal">nullptr</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">CloseHandle</span>(hProcess);</span><br><span class="line">	<span class="built_in">system</span>(<span class="string">&quot;pause&quot;</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/codemelo/p/15840308.html">https://www.cnblogs.com/codemelo/p/15840308.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.52pojie.cn/thread-1816644-1-1.html">https://www.52pojie.cn/thread-1816644-1-1.html</a></p>
+</blockquote>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

