@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            文件操作审计
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="文件操作审计"><a href="#文件操作审计" class="headerlink" title="文件操作审计"></a>文件操作审计</h1><blockquote>
+<p>在 Java 开发中，文件操作是 Web 应用不可或缺的一部分，常见场景包括：文件上传、下载、读取、写入、移动、删除、压缩与解压等。这些功能背后，往往隐藏着高危安全风险，尤其是当用户输入参与路径拼接时，极易引发 路径穿越、任意文件上传、任意文件下载、远程代码执行（RCE） 等严重漏洞。</p>
+</blockquote>
+<h3 id="java文件操作"><a href="#java文件操作" class="headerlink" title="java文件操作"></a>java文件操作</h3><p>​	常见的文件操作分为两类，1、文件内容操作（内容写入、内容删除、内容更改）；2、文件本身操作（文件移动、文件创建、文件删除）。</p>
+<h4 id="File类"><a href="#File类" class="headerlink" title="File类"></a>File类</h4><p>​	File类是文件 &#x2F; 目录路径的抽象表示，仅负责 “描述” 文件属性，它提供了一系列方法，用于创建、删除、判断和遍历文件和目录，不处理文件内容读写！<strong>核心功能点创建、判断、增加、删除</strong>。File对象只是<strong>路径</strong>名称的封装，它可以指向实际存在的文件或目录，也可以指向不存在的路径。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// java中文件常见操作函数。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 文件创建</span></span><br><span class="line"><span class="type">File</span> <span class="variable">file1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;C:/test/test.txt&quot;</span>);</span><br><span class="line"><span class="type">File</span> <span class="variable">file2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;C:/test&quot;</span>, <span class="string">&quot;test.txt&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 文件目录创建</span></span><br><span class="line">File.mkdir()</span><br><span class="line">File.madirs()</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 文件路径获取</span></span><br><span class="line">File.getPath()</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 文件是否存在</span></span><br><span class="line">File.exists()</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 文件大小</span></span><br><span class="line">File.length()</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 文件删除</span></span><br><span class="line">File.delete()</span><br></pre></td></tr></table></figure>
+
+<h4 id="IO流"><a href="#IO流" class="headerlink" title="IO流"></a>IO流</h4><p>​	Java 中的文件操作是通过 I&#x2F;O 流来实现的。I&#x2F;O 流分为两大类：输入流和输出流。每一类又分为字节流和字符流。一个流可以理解为一个数据的序列。输入流表示从一个源读取数据，输出流表示向一个目标写数据。</p>
+<table>
+<thead>
+<tr>
+<th>对比点</th>
+<th>字节流（Byte Stream）</th>
+<th>字符流（Character  Stream）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基类</td>
+<td>InputStream &#x2F; OutputStream</td>
+<td>Reader &#x2F; Writer</td>
+</tr>
+<tr>
+<td>处理单位</td>
+<td>8位字节（byte）</td>
+<td>16位字符（char，支持  Unicode）</td>
+</tr>
+<tr>
+<td>操作对象</td>
+<td>任意数据（图片、音频、视频、压缩包等）</td>
+<td>文本文件（支持各种字符编码）</td>
+</tr>
+<tr>
+<td>是否处理编码</td>
+<td>不处理字符编码，原样读写</td>
+<td>自动进行字符集转换（如 UTF-8 转  Unicode）</td>
+</tr>
+<tr>
+<td>性能（相对）</td>
+<td>更快，适合原始数据</td>
+<td>稍慢，适合文本处理</td>
+</tr>
+<tr>
+<td>场景总结</td>
+<td>读取图片、音频、视频、写入 PDF、ZIP 文件等</td>
+<td>读写 <code>.txt</code> 文本文件、控制台输出字符等</td>
+</tr>
+</tbody></table>
+<p>​	在 Java I&#x2F;O 中，字节流（<code>InputStream</code>&#x2F;<code>OutputStream</code>）直接操作原始字节，不对数据内容做任何解释。它适用于传输任意二进制数据，如图像、视频、序列化对象等。由于字节流不处理字符编码，直接读取文本文件的字节并不会自动转换为可读字符。</p>
+<p>​	相比之下，字符流（<code>Reader</code>&#x2F;<code>Writer</code>）是构建在字节流之上的抽象，它在读写过程中自动进行<strong>字符编码的编解码</strong>。例如，<code>InputStreamReader</code> 可以将一个 <code>InputStream</code> 按照指定的编码（如 UTF-8）转换为字符流，从而正确解析文本内容。</p>
+<p><img src="/2025/09/24/JavaFile/iostream2xx.png" alt="img"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 字符流读取操作	FileInputStream</span></span><br><span class="line"> <span class="type">int</span>  <span class="title function_">read</span><span class="params">()</span> <span class="comment">//从该输入流读取一个字节的数据。 </span></span><br><span class="line"> <span class="type">int</span>  <span class="title function_">read</span><span class="params">(<span class="type">byte</span>[] b)</span> <span class="comment">//从该输入流读取最多 b.length个字节的数据为字节数组。 常用</span></span><br><span class="line"> <span class="type">int</span>  <span class="title function_">read</span><span class="params">(<span class="type">byte</span>[] b, <span class="type">int</span> off, <span class="type">int</span> len)</span> <span class="comment">//从该输入流读取最多 len字节的数据为字节数组。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接加载整个文件进行读取</span></span><br><span class="line"><span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;.\\src\\2.txt&quot;</span>);</span><br><span class="line"><span class="type">FileInputStream</span> <span class="variable">fileInputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file);</span><br><span class="line"><span class="type">byte</span> b[] = <span class="keyword">new</span> <span class="title class_">byte</span>[Math.toIntExact(file.length())];</span><br><span class="line">fileInputStream.read(b);</span><br><span class="line">System.out.println(<span class="keyword">new</span> <span class="title class_">String</span>(b));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 字符流写入操作	FileOutputStream</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">write</span><span class="params">(<span class="type">int</span> b)</span>                    <span class="comment">// 写一个字节</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">write</span><span class="params">(<span class="type">byte</span>[] b)</span>                <span class="comment">// 写整个字节数组 		常用</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">write</span><span class="params">(<span class="type">byte</span>[] b, <span class="type">int</span> off, <span class="type">int</span> len)</span> <span class="comment">// 写数组的一部分</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接把字符串通过byte方式直接写入文件</span></span><br><span class="line"><span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;.\\src\\2.txt&quot;</span>);</span><br><span class="line"><span class="type">FileOutputStream</span> <span class="variable">fileOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(file);</span><br><span class="line"><span class="type">String</span> <span class="variable">content</span> <span class="operator">=</span> <span class="string">&quot;Hello&quot;</span>;</span><br><span class="line"><span class="type">byte</span> b[] = content.getBytes();</span><br><span class="line">fileOutputStream.write(b);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 字符流读取操作	BufferedInputStream</span></span><br><span class="line"><span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;.\\src\\2.txt&quot;</span>);</span><br><span class="line">FileInputStream fis=<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file);</span><br><span class="line"><span class="type">BufferedInputStream</span> <span class="variable">fileOutputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BufferedInputStream</span>(fis);</span><br><span class="line"><span class="type">int</span> a=Math.toIntExact(file.length());</span><br><span class="line"><span class="type">byte</span>[] buffer=<span class="keyword">new</span> <span class="title class_">byte</span>[a];</span><br><span class="line"><span class="type">int</span> <span class="variable">bytesRead</span> <span class="operator">=</span> fileOutputStream.read(buffer);</span><br><span class="line"><span class="type">String</span> <span class="variable">content</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(buffer, <span class="number">0</span>, bytesRead, java.nio.charset.StandardCharsets.UTF_8);</span><br><span class="line">System.out.print(content);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 字符流写入操作	BufferedInputStream</span></span><br><span class="line"><span class="type">File</span> <span class="variable">file2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;.\\src\\2.txt&quot;</span>);</span><br><span class="line">FileOutputStream fos=<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(file2);</span><br><span class="line"><span class="type">String</span> <span class="variable">content2</span> <span class="operator">=</span> <span class="string">&quot;Hello&quot;</span>;</span><br><span class="line"><span class="type">byte</span>[] bytes = content2.getBytes(StandardCharsets.UTF_8);</span><br><span class="line">fos.write(bytes);</span><br></pre></td></tr></table></figure>
+
+<h3 id="java-web文件操作"><a href="#java-web文件操作" class="headerlink" title="java web文件操作"></a>java web文件操作</h3><p>​	web后端常见文件操作，上传、下载、移动、删除、zip解压。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PostMapping(&quot;/upload&quot;)</span> <span class="comment">// 文件上传</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">upload</span><span class="params">(<span class="meta">@RequestParam(&quot;file&quot;)</span> MultipartFile file, </span></span><br><span class="line"><span class="params">                     <span class="meta">@RequestParam(&quot;filename&quot;)</span> String filename)</span> &#123;</span><br><span class="line">    <span class="type">File</span> <span class="variable">dest</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;/uploads/&quot;</span> + filename);</span><br><span class="line">    file.transferTo(dest); </span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;success&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@GetMapping(&quot;/download&quot;)</span> <span class="comment">// 文件下载</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">download</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">filename</span> <span class="operator">=</span> req.getParameter(<span class="string">&quot;file&quot;</span>);</span><br><span class="line">    <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;/data/files/&quot;</span> + filename); </span><br><span class="line">    <span class="keyword">if</span> (file.exists()) &#123;</span><br><span class="line">        Files.copy(file.toPath(), resp.getOutputStream());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@GetMapping(&quot;/moveFile&quot;)</span><span class="comment">// 文件移动</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">moveFile</span><span class="params">(<span class="meta">@RequestParam</span> String file)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">Path</span> <span class="variable">source</span> <span class="operator">=</span> Paths.get(<span class="string">&quot;D:/uploads/temp/&quot;</span> + file);</span><br><span class="line">        <span class="type">Path</span> <span class="variable">target</span> <span class="operator">=</span> Paths.get(<span class="string">&quot;D:/uploads/done/&quot;</span> + file);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (Files.exists(source)) &#123;</span><br><span class="line">            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;移动成功: &quot;</span> + file;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;源文件不存在&quot;</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;移动失败: &quot;</span> + e.getMessage();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@GetMapping(&quot;/delete&quot;)</span><span class="comment">// 文件删除</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">delete</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">filename</span> <span class="operator">=</span> req.getParameter(<span class="string">&quot;file&quot;</span>);</span><br><span class="line">    <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;/data/files/&quot;</span> + filename);</span><br><span class="line">    <span class="keyword">if</span> (file.exists()) &#123;</span><br><span class="line">        file.delete();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@GetMapping(&quot;/zip&quot;)</span><span class="comment">// zip解压</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">unzip</span><span class="params">(<span class="meta">@RequestParam</span> String zipFile)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="type">ZipInputStream</span> <span class="variable">zis</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ZipInputStream</span>(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(zipFile));</span><br><span class="line">        ZipEntry entry;</span><br><span class="line">        <span class="keyword">while</span> ((entry = zis.getNextEntry()) != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;/tmp/extract/&quot;</span> + entry.getName());</span><br><span class="line">            Files.copy(zis, file.toPath(), StandardCopyOption.REPLACE_EXISTING);</span><br><span class="line">        &#125;</span><br><span class="line">        zis.close();</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;解压完成&quot;</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;失败: &quot;</span> + e.getMessage();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="java-web容易存在的漏洞点"><a href="#java-web容易存在的漏洞点" class="headerlink" title="java web容易存在的漏洞点"></a>java web容易存在的漏洞点</h3><p>​	常见漏洞：路径穿越、任意文件上传、任意文件删除、任意文件下载</p>
+<h4 id="路径穿越"><a href="#路径穿越" class="headerlink" title="路径穿越"></a>路径穿越</h4><p>​	new File(“&#x2F;uploads&#x2F;“ + filename);</p>
+<p>​	路径穿越原理：在新建文件时未校验filename，filename可能存在..\恶意字符存在，filename如果为…&#x2F;..&#x2F;test.txt，开发人员设计要固定传入到D:&#x2F;&#x2F;uploads&#x2F;下，通过传入恶意的filename，文件创建路径为D:&#x2F;&#x2F;uploads&#x2F;..&#x2F;..&#x2F;test.txt。test.txt文件生成的位置为D:&#x2F;&#x2F;test.txt，已经跳出开发人员设计的uploads文件目录。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//  修复：修复把filename参数中的恶意字符转义或者去除。</span></span><br><span class="line">filename = filename.replace(<span class="string">&quot;../&quot;</span>, <span class="string">&quot;&quot;</span>).replace(<span class="string">&quot;..\\&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">filename = filename.replace(<span class="string">&quot;..&quot;</span>, <span class="string">&quot;&quot;</span>); <span class="comment">// 额外防御</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="任意文件上传"><a href="#任意文件上传" class="headerlink" title="任意文件上传"></a>任意文件上传</h4><p>​	new File(“&#x2F;uploads&#x2F;“ + filename);</p>
+<p>​	任意文件上传原理：在新建文件时未单独校验文件后缀，任意文件上传配合路径穿越，导致用户可以上传 <code>.jsp</code>、<code>.php</code>、<code>.war</code> 等可执行脚本文件。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 修复：单独取出文件后缀</span></span><br><span class="line"><span class="type">String</span> <span class="variable">originalName</span> <span class="operator">=</span> file.getOriginalFilename();<span class="comment">// 获取文件后缀</span></span><br><span class="line"><span class="keyword">if</span> (!originalName.endsWith(<span class="string">&quot;.jpg&quot;</span>) &amp;&amp; </span><br><span class="line">        !originalName.endsWith(<span class="string">&quot;.png&quot;</span>) &amp;&amp; </span><br><span class="line">        !originalName.endsWith(<span class="string">&quot;.pdf&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;不支持的文件类型&quot;</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="文件删除、文件下载"><a href="#文件删除、文件下载" class="headerlink" title="文件删除、文件下载"></a>文件删除、文件下载</h4><p>​	文件删除和文件下载，它们和“上传”“创建”一样，都依赖用户输入的 <code>filename</code>，所以风险模式是一样的。未校验filename内是否存在恶意字符。</p>
+<h4 id="解压漏洞"><a href="#解压漏洞" class="headerlink" title="解压漏洞"></a><strong>解压漏洞</strong></h4><p>​	entry &#x3D; zis.getNextEntry()</p>
+<p>​	当zip文件解压的时候会挨个取出zip里面的文件，当文件解压功能未对 <code>ZipEntry</code> 的文件名进行安全校验，攻击者可构造包含 <code>../</code> 的恶意压缩包，解压时触发<strong>路径穿越</strong>，覆盖服务器任意文件（如 <code>../webapps/ROOT/shell.jsp</code>），可能导致<strong>远程代码执行（RCE）</strong>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 修复：通过normalize()函数去除，把 ../、./ 等符号解析掉</span></span><br><span class="line"><span class="type">Path</span> <span class="variable">targetPath</span> <span class="operator">=</span> Paths.get(<span class="string">&quot;/tmp/extract&quot;</span>).resolve(entry.getName()).normalize();</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

