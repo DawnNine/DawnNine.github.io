@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            蠕虫分析
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="蠕虫分析"><a href="#蠕虫分析" class="headerlink" title="蠕虫分析"></a>蠕虫分析</h1><p>遇到了一个有意思的蠕虫病毒，尝试了很多杀软都杀不掉。dll文件属性是：Hidden+System+只读。dll运行时文件强制锁定了，这个是很多杀软无法查杀的原因。</p>
+<p>dll最后加了一个层upx壳，在upx壳前面把整个程序进行加密，通过dll运行后申请内存把程序完成的释放到内存中。</p>
+<h3 id="加密"><a href="#加密" class="headerlink" title="加密"></a>加密</h3><p>通过字符串分析里面有大量的dll库名称和函数名称，</p>
+<p><img src="/2026/11/15/%E8%A0%95%E8%99%AB%E5%88%86%E6%9E%90/image-20261117223342967.png" alt="image-20261117223342967"></p>
+<p>通过GetProcAddress函数进行获取dll地址，加载内存函数</p>
+<p><img src="/2026/11/15/%E8%A0%95%E8%99%AB%E5%88%86%E6%9E%90/image-20261117223624274.png" alt="image-20261117223624274"></p>
+<p>结合AI分析此处的 <code>call eax</code>为第二次压缩解压跳转位置，跳转完将内存进行dump下。</p>
+<p><img src="/2026/11/15/%E8%A0%95%E8%99%AB%E5%88%86%E6%9E%90/image-20261118000823536.png" alt="image-20261118000823536"></p>
+<h3 id="本体"><a href="#本体" class="headerlink" title="本体"></a>本体</h3><p>分析内存中释放的代码，查看导入表和字符串，通篇没有函数，字符串显示没有找到函数名。因为目前的程序不是一个完整的程序，xref 全无。</p>
+<p><img src="/2026/11/15/%E8%A0%95%E8%99%AB%E5%88%86%E6%9E%90/image-20261119205747897.png" alt="image-20261119205747897"></p>
+<p>函数显示全部为MEMORY[0xE8000000，他的具体函数是由基址 + 偏移计算得出具体函数是运行时填充。</p>
+<p><img src="/2026/11/15/%E8%A0%95%E8%99%AB%E5%88%86%E6%9E%90/image-20261119210106330.png" alt="image-20261119210106330"></p>
+<p>基本上人工逆向太过复杂，需要把这些代码函数一个重新命名，并且导入表要根据字符串中的函数和导入表在动态解析函数api时的函数进行自动化明明改写，但是还是有很大一部分没有办法解决。太菜了逆向分析不动了</p>
+<p>只能根据字符串看看了，功能猜测结合AI给的结果。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1. SSDP 发现路由器      M-SEARCH → 239.255.255.250:1900</span><br><span class="line">2. UPnP 穿透 NAT        解析 WANIPConnection:1 的 controlURL</span><br><span class="line">3. SOAP AddPortMapping  把内网端口映射到公网，建立入站通路</span><br><span class="line">4. 取公网 IP            http://www.getmyip.org</span><br><span class="line">5. SMB 弱口令爆破        IPC$ + nopassword/password12/adminadmin...</span><br><span class="line">6. MS06-040 溢出        NetpwPathCanonicalize 打 Server 服务</span><br><span class="line">7. U 盘传播             autorun.inf + RECYCLER 隐藏目录</span><br><span class="line">8. 搜索引擎传播         http://%s/search?q=&lt;随机&gt;</span><br><span class="line">9. 持久化               Run 键 + CreateServiceA 自启动服务</span><br></pre></td></tr></table></figure>
+
+<p>为什么很多杀软杀不掉，仔细让AI解释了一下。</p>
+<p>dll文件属性是 <code>Hidden+System+只读</code>，即 <code>attrib</code> 里看到的 <code>A SHR</code>。它同时配置了ACL。 <code>cacls</code> 看落地文件：</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">C:\<span class="title">WINDOWS</span>\<span class="title">system32</span>&gt;<span class="title">cacls</span> <span class="title">itkwlghx.dll</span></span></span><br><span class="line"><span class="function"><span class="title">C</span>:\<span class="title">WINDOWS</span>\<span class="title">system32</span>\<span class="title">itkwlghx.dll</span> <span class="title">Everyone</span>:(特殊访问:)</span></span><br><span class="line"><span class="function">                                          <span class="title">SYNCHRONIZE</span></span></span><br><span class="line"><span class="function">                                          <span class="title">FILE_EXECUTE</span></span></span><br></pre></td></tr></table></figure>
+
+<p>DACL 里只有一条 Everyone 的 Allow，而且<strong>只给了 <code>FILE_EXECUTE | SYNCHRONIZE</code>，没有 <code>FILE_READ_DATA</code>、没有 <code>DELETE</code>、没有 <code>WRITE_DAC</code></strong>。</p>
+<p>Windows 的访问检查是白名单模型：DACL 里没列出的权限一律隐式拒绝。复制需要 <code>FILE_READ_DATA</code>，它没给；删除需要 <code>DELETE</code>，也没给；改权限需要 <code>WRITE_DAC</code>，同样没给。所以连管理员直接 <code>copy</code> 都是”访问被拒绝”——管理员只是一个 SID，DACL 里没有它的 Allow 项照样读不了，大概实现是这样。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> BOOL <span class="title">HardenFileAcl</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* path)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// (1) Everyone SID = S-1-1-0</span></span><br><span class="line">    SID_IDENTIFIER_AUTHORITY nt = SECURITY_WORLD_SID_AUTHORITY;</span><br><span class="line">    PSID pEveryone = <span class="literal">nullptr</span>;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">AllocateAndInitializeSid</span>(&amp;nt, <span class="number">1</span>, SECURITY_WORLD_RID,</span><br><span class="line">                                  <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, &amp;pEveryone))</span><br><span class="line">        <span class="keyword">return</span> FALSE;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// (2) DACL 只放一条 Allow ACE：Everyone + (FILE_EXECUTE | SYNCHRONIZE)</span></span><br><span class="line">    <span class="comment">//     这就是 cacls 显示&quot;特殊访问: FILE_EXECUTE, SYNCHRONIZE&quot;的原因</span></span><br><span class="line">    <span class="type">const</span> DWORD mask = FILE_EXECUTE | SYNCHRONIZE;</span><br><span class="line">    DWORD aceSize = <span class="built_in">sizeof</span>(ACCESS_ALLOWED_ACE) - <span class="built_in">sizeof</span>(DWORD) + <span class="built_in">GetLengthSid</span>(pEveryone);</span><br><span class="line">    DWORD aclSize = <span class="built_in">sizeof</span>(ACL) + aceSize;</span><br><span class="line">    PACL pAcl = (PACL)<span class="built_in">LocalAlloc</span>(LPTR, aclSize);</span><br><span class="line">    <span class="keyword">if</span> (!pAcl) &#123; <span class="built_in">FreeSid</span>(pEveryone); <span class="keyword">return</span> FALSE; &#125;</span><br><span class="line"></span><br><span class="line">    SECURITY_DESCRIPTOR sd;</span><br><span class="line">    BOOL ok = <span class="built_in">InitializeSecurityDescriptor</span>(&amp;sd, SECURITY_DESCRIPTOR_REVISION)</span><br><span class="line">           &amp;&amp; <span class="built_in">InitializeAcl</span>(pAcl, aclSize, ACL_REVISION)</span><br><span class="line">           &amp;&amp; <span class="built_in">AddAccessAllowedAce</span>(pAcl, ACL_REVISION, mask, pEveryone)</span><br><span class="line">           &amp;&amp; <span class="built_in">SetSecurityDescriptorDacl</span>(&amp;sd, TRUE, pAcl, FALSE);</span><br><span class="line">    <span class="keyword">if</span> (ok) ok = <span class="built_in">SetFileSecurityA</span>(path, DACL_SECURITY_INFORMATION, &amp;sd);</span><br><span class="line">    <span class="built_in">LocalFree</span>(pAcl);</span><br><span class="line">    <span class="built_in">FreeSid</span>(pEveryone);</span><br><span class="line">    <span class="keyword">if</span> (!ok) <span class="keyword">return</span> FALSE;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// (3) 设 SHR 属性：dir 默认不显示、只读挡住改写/删除</span></span><br><span class="line">    <span class="comment">//     ARCHIVE 是 CreateFile 默认属性，加上 H|S|R 即得 &quot;A SHR&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">SetFileAttributesA</span>(path,</span><br><span class="line">        FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_HIDDEN |</span><br><span class="line">        FILE_ATTRIBUTE_SYSTEM  | FILE_ATTRIBUTE_READONLY);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>整个样本太多花指令和混淆代码了，而且本体是在内存中释放强加密，基本上是用AI完成的，病毒很老但是学到了很多思路，代码写的还是很牛逼的。</p>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

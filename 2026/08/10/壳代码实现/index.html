@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            壳代码实现
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="压缩壳代码实现"><a href="#压缩壳代码实现" class="headerlink" title="压缩壳代码实现"></a>压缩壳代码实现</h1><p>通过分析之前的upx壳的代码可知，加壳	程序运行后壳代码解压还原整个原程序内容，包括混淆的导入表资源表</p>
+<p>程序运行前必须读取这些导入表、重定位表、TLS表、延迟导入表，数据目录。如果进行压缩要做内存地址重定位</p>
+<p>根据之前PE结构图，要重点处理的PE头中的 DataDirectory</p>
+<table>
+<thead>
+<tr>
+<th align="left">索引</th>
+<th align="left">目录</th>
+<th align="left">是否需要处理</th>
+<th align="left">判断依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>0</strong></td>
+<td align="left">导出目录</td>
+<td align="left"><strong>有导出时必须</strong></td>
+<td align="left">DLL 尤其常见；需要保证外部调用方能正确找到导出函数，也要考虑转发导出。</td>
+</tr>
+<tr>
+<td align="left"><strong>1</strong></td>
+<td align="left">导入目录</td>
+<td align="left"><strong>重点处理</strong></td>
+<td align="left">有普通导入就必须保证依赖 DLL、函数和相关结构可正确解析。</td>
+</tr>
+<tr>
+<td align="left"><strong>2</strong></td>
+<td align="left">资源目录</td>
+<td align="left"><strong>通常保留，按需维护</strong></td>
+<td align="left">清单、图标、版本信息及程序运行所用资源可能依赖它；资源清单可能在入口点前被系统使用。</td>
+</tr>
+<tr>
+<td align="left"><strong>3</strong></td>
+<td align="left">异常目录</td>
+<td align="left"><strong>x64 重点处理</strong></td>
+<td align="left">异常展开、栈回溯依赖相关函数表与展开数据。普通 x86 的异常处理机制不同。</td>
+</tr>
+<tr>
+<td align="left"><strong>4</strong></td>
+<td align="left">安全目录</td>
+<td align="left"><strong>签名文件需专门处理</strong></td>
+<td align="left">此项地址是<strong>文件偏移</strong>。加壳通常改变签名覆盖内容，使原签名失效；需要签名时应对最终文件重新签名。</td>
+</tr>
+<tr>
+<td align="left"><strong>5</strong></td>
+<td align="left">基址重定位表</td>
+<td align="left"><strong>支持地址变化时必须</strong></td>
+<td align="left">支持 ASLR，或无法保证首选基址可用时，需要有效的重定位信息。DLL 尤其不能轻率删除。</td>
+</tr>
+<tr>
+<td align="left"><strong>6</strong></td>
+<td align="left">调试目录</td>
+<td align="left"><strong>通常可选</strong></td>
+<td align="left">可按发布需求规范剥离；保留时需要维护其中的地址、文件偏移等信息。</td>
+</tr>
+<tr>
+<td align="left"><strong>7</strong></td>
+<td align="left">架构特定数据</td>
+<td align="left"><strong>常见 x86&#x2F;x64 通常无需</strong></td>
+<td align="left">该索引在现代 PE 规范中为保留项，应为零；不要当成可自由使用的字段。</td>
+</tr>
+<tr>
+<td align="left"><strong>8</strong></td>
+<td align="left">全局指针 RVA</td>
+<td align="left"><strong>常见 x86&#x2F;x64 通常无需</strong></td>
+<td align="left">特定架构相关；通常为空，按实际架构判断。</td>
+</tr>
+<tr>
+<td align="left"><strong>9</strong></td>
+<td align="left">TLS 目录</td>
+<td align="left"><strong>存在时必须，重点处理</strong></td>
+<td align="left">包括 TLS 模板、索引、回调及线程生命周期语义；TLS 回调可能早于程序入口点执行。</td>
+</tr>
+<tr>
+<td align="left"><strong>10</strong></td>
+<td align="left">加载配置目录</td>
+<td align="left"><strong>存在时必须评估，重点处理</strong></td>
+<td align="left">涉及安全 cookie、CFG 等配置；不同版本结构长度不同，不能固定长度生搬硬套。</td>
+</tr>
+<tr>
+<td align="left"><strong>11</strong></td>
+<td align="left">绑定导入目录</td>
+<td align="left"><strong>一般不必保留绑定优化</strong></td>
+<td align="left">导入关系变化后原绑定信息可能失效；应正确移除失效信息或更新，不能留着不管。</td>
+</tr>
+<tr>
+<td align="left"><strong>12</strong></td>
+<td align="left">导入地址表</td>
+<td align="left"><strong>重点处理</strong></td>
+<td align="left">与普通导入配套，需要保证地址范围、内存属性及实际导入解析结果一致。</td>
+</tr>
+<tr>
+<td align="left"><strong>13</strong></td>
+<td align="left">延迟导入目录</td>
+<td align="left"><strong>使用时必须</strong></td>
+<td align="left">延迟导入有自己的描述符、地址表和运行时解析逻辑，不能只处理普通导入。</td>
+</tr>
+<tr>
+<td align="left"><strong>14</strong></td>
+<td align="left">CLR 运行时描述符</td>
+<td align="left"><strong>托管程序必须专门支持</strong></td>
+<td align="left">纯原生程序通常为空；.NET 和混合模式程序不能直接套用普通原生 PE 的处理方式。</td>
+</tr>
+</tbody></table>
+<ul>
+<li>**优先实现兼容：**1、5、9、10、12，以及 x64 的 3。</li>
+<li>**按目标文件功能支持：**0、2、4、13、14。</li>
+<li>**通常可剥离、取消优化或保持为空：**6、11，以及常见 x86&#x2F;x64 下的 7、8。</li>
+</ul>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>

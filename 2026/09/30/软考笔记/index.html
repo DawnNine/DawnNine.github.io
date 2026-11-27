@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="google-site-verification" content="TZE0rZyIqLl10trYu3BWBWa1Vmz6HFwhb2OcNEK4u-s" />
+     <link rel="shortcut icon" href= /img/favicon.ico >
+    <title>
+        Dawn Nine学习笔记
+    </title>
+    <meta name="description" content=  >
+    <meta name="keywords" content= Dawn Nine,代码学习 >
+    
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
+
+    
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-home
+ replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
+            软考笔记
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <h1 id="信息安全工程师复习笔记"><a href="#信息安全工程师复习笔记" class="headerlink" title="信息安全工程师复习笔记"></a>信息安全工程师复习笔记</h1><blockquote>
+<p>考前复习了15天成功拿下，分享一波笔记</p>
+</blockquote>
+<h3 id="1、网络信息安全概述"><a href="#1、网络信息安全概述" class="headerlink" title="1、网络信息安全概述"></a>1、网络信息安全概述</h3><p><strong>网络安全基本属性：机密性C（对应泄密）、完整性I（对应篡改）、可用性A（对应破坏）、抗抵赖性、可控性</strong></p>
+<p><strong>防御、检测、应急、恢复。称为网络安全四大支柱</strong></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004145804017.png" alt="image-20261004145804017"></p>
+<p><strong>密码分为三类：核心密码、普通密码、商用密码</strong></p>
+<p><strong>中国网络安全审查技术与认证中心（CCRC）是实施审查和认证的专门机构</strong></p>
+<p>域名系统出现安全事件时，<strong>应在24小时内向电信管理机构报告。</strong></p>
+<p>国家互联网应急中心（CNCERT或CNCERT&#x2F;CC)</p>
+<h3 id="2、网络攻击原理与常用方法"><a href="#2、网络攻击原理与常用方法" class="headerlink" title="2、网络攻击原理与常用方法"></a>2、网络攻击原理与常用方法</h3><h4 id="网络攻击模型"><a href="#网络攻击模型" class="headerlink" title="网络攻击模型"></a>网络攻击模型</h4><p><strong>1、攻击树模型</strong></p>
+<p>​	优点：头脑风暴、费效分析、可对复杂常见进行建模分析</p>
+<p>​	缺点：无法建立多重尝试、时间依赖、访问控制与循环事件，在处理大规模网络时逻辑会变得特别复杂。</p>
+<p><strong>2、MITRE ATT&amp;CK模型（真实数据抽象形成）</strong></p>
+<p><strong>3、网络杀伤链（Kill Chain）模型（分成7个阶段）</strong></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004151912408.png" alt="image-20261004151912408"></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004152101595.png" alt="image-20261004152101595"></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004152218333.png" alt="image-20261004152218333"></p>
+<h4 id="拒绝服务攻击类型"><a href="#拒绝服务攻击类型" class="headerlink" title="拒绝服务攻击类型"></a>拒绝服务攻击类型</h4><p>1、同步包风暴；2、UDP洪水；3、Smurf攻击；4、垃圾邮件；5、消耗CPU和内存资源的攻击；6、死亡之ping；7、泪滴攻击；8、分布式拒绝服务；</p>
+<p>同步包风暴：发送大量半连接状态的服务请求，使服务器无法处理正常的连接请求。</p>
+<p>UDP洪水：利用主机能自动进行回复的服务来进行攻击。</p>
+<p>泪滴攻击：IP数据包在网络中传输时，会被分解成许多不同的片传送，并借由偏移量字段(Offset Field)作为重组的依据。泪滴攻击通过加入过多或不必要的偏移量字段，使计算机系统重组错乱，产生不可预期的后果。</p>
+<p>Smurf攻击通过使用将回复地址设置成受害网络的广播地址的ICMP应答请求(ping)数据包，来淹没受害主机。</p>
+<h3 id="3、密码学"><a href="#3、密码学" class="headerlink" title="3、密码学"></a>3、密码学</h3><p><strong>密码学主要是由密码编码和密码分析两个部分组成</strong></p>
+<p>1949年，香农提出增加<strong>混乱</strong>和<strong>扩散</strong>，奠定了现代密码学理论基础。</p>
+<p><strong>中国密码发展里程碑：2005年《电子签名》施行；2006年公布商用密码算法；2020年1月1日《中华人民共和国密码法》正式实行</strong></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004161727088.png" alt="image-20261004161727088"></p>
+<p><strong>密钥体制分为私钥和公钥密码体系两种，介于两者之间的为混合密码体系</strong></p>
+<h4 id="对称密码体系"><a href="#对称密码体系" class="headerlink" title="对称密码体系"></a>对称密码体系</h4><p><strong>对称密钥需要维护n(n-1)&#x2F;2密钥，优点：处理简单，处理速度快，适合对大量数据进行加密分析。缺点：密钥分配困难、密钥管理复杂、无法认证消息来源</strong></p>
+<p><strong>对称算法：DES&#x2F;3DES&#x2F;AES&#x2F;RC4&#x2F;RC5&#x2F;IDEA&#x2F;SM1&#x2F;SM4</strong></p>
+<h4 id="非对称密码体系"><a href="#非对称密码体系" class="headerlink" title="非对称密码体系"></a>非对称密码体系</h4><p><strong>优点：密钥分配方便、密钥保管量少、拓展性强</strong></p>
+<p><strong>非对称算法：RSA算法、椭圆曲线密码（ECC）、SM2国密算法</strong></p>
+<h4 id="密码算法"><a href="#密码算法" class="headerlink" title="密码算法"></a>密码算法</h4><h5 id="加密模式分类"><a href="#加密模式分类" class="headerlink" title="加密模式分类"></a>加密模式分类</h5><p>​	分组加密（块加密）：将数据分成固定长的组，按照组进行计算。如DES、AES、RC5等。</p>
+<p>​	序列加密（流加密）：对数据按位或字节逐个进行加密处理。如RC4、ZUC等。</p>
+<h5 id="DES算法"><a href="#DES算法" class="headerlink" title="DES算法"></a>DES算法</h5><h5 id="由IBM公司研制，分组加密算法，支持64比特的明文块加密，密钥长度64位，实际有效长度为56比特（8位为校验码）。"><a href="#由IBM公司研制，分组加密算法，支持64比特的明文块加密，密钥长度64位，实际有效长度为56比特（8位为校验码）。" class="headerlink" title="由IBM公司研制，分组加密算法，支持64比特的明文块加密，密钥长度64位，实际有效长度为56比特（8位为校验码）。"></a>由IBM公司研制，分组加密算法，支持64比特的明文块加密，密钥长度64位，实际有效长度为56比特（8位为校验码）。</h5><h5 id="3DES算法"><a href="#3DES算法" class="headerlink" title="3DES算法"></a>3DES算法</h5><p>​	3DES并非加密三次，而是**“加密-解密-加密”**，其有效长度为112位。</p>
+<h5 id="IDEA算法"><a href="#IDEA算法" class="headerlink" title="IDEA算法"></a>IDEA算法</h5><p>​	IDEA算法为分组算法，明文和密文均为64比特，<strong>密钥长度为128为比特</strong>。</p>
+<h4 id="AES算法"><a href="#AES算法" class="headerlink" title="AES算法"></a>AES算法</h4><p>​	AES算法为分组算法，<strong>至少为128为比特分组，支持的密钥长度至少为128、192和256比特</strong></p>
+<h4 id="RSA算法"><a href="#RSA算法" class="headerlink" title="RSA算法"></a>RSA算法</h4><p>​	RSA算法为非对称加密算法，<strong>公钥和私钥都可用于加密消息，用于加密的密钥和解密的密钥不同，它能有效保障数据传输的机密性、完整性、真实性和不可否认性。</strong></p>
+<p>​	RSA钥生成是<strong>基于大整数因子分解困难性</strong></p>
+<p>​	密钥分配：<strong>保密参数d、p和q（私钥核心），公开参数e和n（公钥）</strong></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004165158211.png" alt="image-20261004165158211"></p>
+<blockquote>
+<p>例：设素数p&#x3D;3、q&#x3D;17，并令公钥指数e&#x3D;13。对明文M&#x3D;2进行加密和解密</p>
+<p>1、计算公钥模数n<br>n&#x3D;p<em>q&#x3D;3</em>17&#x3D;51  此时公开密钥为（e&#x3D;13,n&#x3D;51)</p>
+<p>2、计算欧拉函数<br>(n)&#x3D;(p-1)(q-1)&#x3D;2*26&#x3D;32<br>e *d mod  (n) &#x3D; 1<br>13 *d mod 32 &#x3D; 1 私钥 d&#x3D;5  （5，51）</p>
+<p>3、加密过程 C &#x3D;M^e mod n<br>C &#x3D; 2^ 13 mod 51 &#x3D; 8192 mod 51 &#x3D;32</p>
+<p>4、解密过程 M &#x3D; C^d mod n<br>M &#x3D; 32 ^5 mod 51 &#x3D;33553323 mod 51 &#x3D;2</p>
+</blockquote>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004200330637.png" alt="image-20261004200330637"></p>
+<h4 id="国产密码算法"><a href="#国产密码算法" class="headerlink" title="国产密码算法"></a>国产密码算法</h4><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004172106783.png" alt="image-20261004172106783"></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004172300961.png" alt="image-20261004172300961"></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004172325319.png" alt="image-20261004172325319"></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004172447269.png" alt="image-20261004172447269"></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004172531812.png" alt="image-20261004172531812"></p>
+<p>SSH协议由三个子协议组成，SSH传输层协议、SSH用户认证协议和SSH连接协议</p>
+<p>WPA认证方式有WPA、WPA-PSK、WPA2、WPA2-PSK</p>
+<p>WPKI采用了优化的ECC椭圆曲线加密和X509数字证书：采用证书管理公钥，通过第三方的可信任机构一认证中心(CA)验证用户的身份，从而实现信息的安全传输。</p>
+<p><strong>在X.509标准中，在数字证书中的数据域有证书、版本号、序列号（唯一标识每一个CA下发的证书)、算法标识、颁发者、有效期、有效起始日期、有效终止日期、使用者、使用者公钥信息、公钥算法、公钥、颁发者唯一标识、使用者唯一标识、扩展、证书签名算法、证书签名（发证机构即CA对用户证书的签名)。</strong></p>
+<h3 id="4、网络安全体系和模型"><a href="#4、网络安全体系和模型" class="headerlink" title="4、网络安全体系和模型"></a>4、网络安全体系和模型</h3><h4 id="BLP机密性模型（下读上写"><a href="#BLP机密性模型（下读上写" class="headerlink" title="BLP机密性模型（下读上写)"></a>BLP机密性模型（下读上写)</h4><p>​	**简单安全特性：**主体只能向下读，不能向上读</p>
+<p>​	***特性：**主体只能向上写，不能向下写</p>
+<h4 id="军事安全策略"><a href="#军事安全策略" class="headerlink" title="军事安全策略"></a>军事安全策略</h4><p>​	**安全级：**公开&lt;秘密&lt;机密&lt;绝密</p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002154352590.png" alt="image-20261002154352590"></p>
+<h4 id="BiBa完整性模型（上读下写）"><a href="#BiBa完整性模型（上读下写）" class="headerlink" title="BiBa完整性模型（上读下写）"></a>BiBa完整性模型（上读下写）</h4><p>BiBa模型主要用于防止非授权修改系统信息，以保护系统的信息完整性。</p>
+<p>​	**简单安全特性：**主体不能向下读</p>
+<p>​	***特性：**主体不能向上写</p>
+<p>​	**调用特性：**主体的完整性级别小于另一个主体的完整性，不能调用另一个主体</p>
+<p>**自主访问控制模型的典型代表有jones取予模型(Take-Grant模型)、HRU模型(Harrison、Ruzzo、Ullman访问控制矩阵模型)、动作一实体模型等。 **</p>
+<p><strong>强制访问控制的典型代表有基于角色的存取控制模型、BLP模型(Be–LaPadula模型)、Clak-Wilson模型、BN模型(Brewer Nash Chinese Wall模型)等。 数据库安全领域，还有Wood模型、Smith Winslett模型等。</strong></p>
+<h4 id="PDRR模型（防护、检测、恢复、响应）"><a href="#PDRR模型（防护、检测、恢复、响应）" class="headerlink" title="PDRR模型（防护、检测、恢复、响应）"></a>PDRR模型（防护、检测、恢复、响应）</h4><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002160804346.png" alt="image-20261002160804346"></p>
+<h4 id="P2DR模型（策略、防护、检测、响应）"><a href="#P2DR模型（策略、防护、检测、响应）" class="headerlink" title="P2DR模型（策略、防护、检测、响应）"></a>P2DR模型（策略、防护、检测、响应）</h4><h4 id="中国模型-WPDRR模型（-预警、防护、检测、恢复、响应、反击）"><a href="#中国模型-WPDRR模型（-预警、防护、检测、恢复、响应、反击）" class="headerlink" title="中国模型  WPDRR模型（ 预警、防护、检测、恢复、响应、反击）"></a>中国模型  WPDRR模型（ 预警、防护、检测、恢复、响应、反击）</h4><p><strong>能力成熟度模型（CMM):1级：非正式执行；2级：计划跟踪；3级：充分定义；4级：量化控制；5级：持续优化</strong></p>
+<h4 id="软件安全能力成熟度模型分为5级"><a href="#软件安全能力成熟度模型分为5级" class="headerlink" title="软件安全能力成熟度模型分为5级"></a>软件安全能力成熟度模型分为5级</h4><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002161338270.png" alt="image-20261002161338270"></p>
+<h4 id="等保2-0是《中华人民共和国网络安全法》第21条规定，体系包括风险管理体系、安全管理体系、安全技术体系、网络信任体系、法律法规体系、政策标准体系等。"><a href="#等保2-0是《中华人民共和国网络安全法》第21条规定，体系包括风险管理体系、安全管理体系、安全技术体系、网络信任体系、法律法规体系、政策标准体系等。" class="headerlink" title="等保2.0是《中华人民共和国网络安全法》第21条规定，体系包括风险管理体系、安全管理体系、安全技术体系、网络信任体系、法律法规体系、政策标准体系等。"></a>等保2.0是《中华人民共和国网络安全法》第21条规定，体系包括风险管理体系、安全管理体系、安全技术体系、网络信任体系、法律法规体系、政策标准体系等。</h4><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002162004227.png" alt="image-20261002162004227"></p>
+<h3 id="5、物理安全"><a href="#5、物理安全" class="headerlink" title="5、物理安全"></a>5、物理安全</h3><h4 id="机房安全分析与防护"><a href="#机房安全分析与防护" class="headerlink" title="机房安全分析与防护"></a>机房安全分析与防护</h4><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002162743904.png" alt="image-20261002162743904"></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002162817076.png" alt="image-20261002162817076"></p>
+<h3 id="6、认证"><a href="#6、认证" class="headerlink" title="6、认证"></a>6、认证</h3><h4 id="Kerberos认证实体"><a href="#Kerberos认证实体" class="headerlink" title="Kerberos认证实体"></a>Kerberos认证实体</h4><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002164417255.png" alt="image-20261002164417255"></p>
+<h4 id="PKI认证实体"><a href="#PKI认证实体" class="headerlink" title="PKI认证实体"></a>PKI认证实体</h4><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002164943223.png" alt="image-20261002164943223"></p>
+<h3 id="7、访问控制"><a href="#7、访问控制" class="headerlink" title="7、访问控制"></a>7、访问控制</h3><h4 id="访问控制参考模型"><a href="#访问控制参考模型" class="headerlink" title="访问控制参考模型"></a>访问控制参考模型</h4><p>访问控制模型组成要素主要有主体、参考监视器、客体、访问控制数据库、审计库。</p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002222813578.png" alt="image-20261002222813578"></p>
+<h4 id="自主访问控制（行主列客，行分能前令，列分护访）"><a href="#自主访问控制（行主列客，行分能前令，列分护访）" class="headerlink" title="自主访问控制（行主列客，行分能前令，列分护访）"></a>自主访问控制（行主列客，行分能前令，列分护访）</h4><p>自主访问控制（DAC）是指客体的所有者按照自己的安全策略授予系统中的其他用户对其的访问权限。</p>
+<p>实现：基于行的自主访问控制和基于列的自主访问控制。</p>
+<h5 id="基于行的自主访问控制"><a href="#基于行的自主访问控制" class="headerlink" title="基于行的自主访问控制"></a>基于行的自主访问控制</h5><p>​	在每一个主体上都附加一个改主体可以访问的客体的明细表，根据表中信息的不同又可以分成<strong>三种形式，能力表、前缀表、口令</strong>。</p>
+<p>​	<strong>能力表。它是决定用户能否对客户进行访问以及具有何种访问模式（读、写、执行）</strong></p>
+<p>​	<strong>前缀表。它包括保护客体名和主体对它的访问权限</strong></p>
+<p>​	<strong>口令。每一个客体有相应的口令</strong></p>
+<h5 id="基于列的自主访问控制"><a href="#基于列的自主访问控制" class="headerlink" title="基于列的自主访问控制"></a>基于列的自主访问控制</h5><p>​	在每个客体上都附件一个可以访问它的主体的明细表，<strong>它有两种形式，即保护位和访问控制表。</strong></p>
+<p>​	<strong>保护位。对所有主体、主体组以及客体的拥有一个访问模式集合，通常以比特位来标识访问权限。Linux系统就是利用的这种访问控制方法</strong></p>
+<p>​	<strong>访问控制表。简称ACL，它是在每个客体上都附件一个主体明细表，标识访问控制矩阵。</strong></p>
+<p>​	自主访问控制优点：访问机制简单、灵活。缺点：试试依赖用户的安全意识和技能，不能满足高安全等级的安全要求。</p>
+<h4 id="强制访问控制"><a href="#强制访问控制" class="headerlink" title="强制访问控制"></a>强制访问控制</h4><p>​	强制访问控制（MAC）是指系统根据主体和客体的安全属性，以强制方式控制主体对客体的访问。与自主访问控制相比，强制访问控制更加严格。<strong>BLP和BiBa模型都是属于强制访问控制。</strong></p>
+<p>​	<strong>强制访问控制分为两类：基于角色的访问控制和基于属性的控制访问控制。</strong></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002230747231.png" alt="image-20261002230747231"></p>
+<h4 id="访问控制技术应用"><a href="#访问控制技术应用" class="headerlink" title="访问控制技术应用"></a>访问控制技术应用</h4><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002231804481.png" alt="image-20261002231804481"></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002231943410.png" alt="image-20261002231943410"> </p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261002231958601.png" alt="image-20261002231958601"></p>
+<p><strong>自主访问控制模型的典型代表有HRU模型(Harrison、Ruzzo、Uman访问控制矩阵模型)、Jones取予模型(Takc-Grant模型)、动作一实体模型等。</strong></p>
+<p> <strong>强制访问控制的典型代表有BLP模型(Bel-La Padula模型)基于角色的存取控制模型、Clark-Wilson模型、BN模型(Brewer Nash Chinese Wall模型)等。在数据库安全领域，还有Wood模型、Smith Winslett模型等。</strong></p>
+<h3 id="8、防火墙"><a href="#8、防火墙" class="headerlink" title="8、防火墙"></a>8、防火墙</h3><p><strong>防火墙安全区域四部分：公共外部网络、内联网、外联网、军事缓冲求DMZ。</strong></p>
+<p><strong>防火墙功能：过滤非安全网络访问、限制网络访问、网络访问审计、网络带宽控制、协同防御</strong></p>
+<p><strong>防火墙发展：控制粒度细化、安全功能增强、分类细化、智能增强。</strong></p>
+<p><strong>防火墙类型分为包过滤防火墙、代理防火墙、下一代防火墙、Web应用防火墙、工控防火墙。</strong>：</p>
+<h5 id="包过滤防火墙"><a href="#包过滤防火墙" class="headerlink" title="包过滤防火墙"></a>包过滤防火墙</h5><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261003100319852.png" alt="image-20261003100319852"></p>
+<p>优点：低负载、高通过率、对用户透明</p>
+<p>缺点：不能对用户级别进行区分，IP容易伪装</p>
+<h5 id="状态检查技术"><a href="#状态检查技术" class="headerlink" title="状态检查技术"></a>状态检查技术</h5><p>​	采用状态检查技术的防火墙首先建立并维护一张会话表，当又符合已定义安全策略的TCP连接或者UDP流时，防火墙会创建会话项，然后一句状态检查，与这些绘画相关关联的包才允许通过防火墙。</p>
+<h5 id="应用服务代理"><a href="#应用服务代理" class="headerlink" title="应用服务代理"></a>应用服务代理</h5><p>​	应用服务代理防火墙扮演内外网主机网络通信连接中间人的角色。</p>
+<p>​	优点：不允许外部主机直接访问内部主机、支持多用户认证方案、可以分析数据包内部应用命令、可以提供相应的审计记录。</p>
+<p>​	缺点：速度比包过滤要慢、对用户比较透明、与特定应用协议相关联，代理服务不能支持所有的网络协议。</p>
+<h4 id="网络地址转化技术"><a href="#网络地址转化技术" class="headerlink" title="网络地址转化技术"></a>网络地址转化技术</h4><p>​	实现有三个方式：静态NAT、NAT池、端口NAT</p>
+<p>​	静态NAT：内部每台主机映射到外部网络中的合法地址</p>
+<p>​	NAT池：在外部地址中配置合法地址集，采用动态分配的方式映射到内部网络。</p>
+<p>​	端口NAT：把内部地址映射到外部地址网络的一个IP地址的不同端口上。（常用）</p>
+<h4 id="防火墙共性问题：深度包检测、操作系统、网络协议分析"><a href="#防火墙共性问题：深度包检测、操作系统、网络协议分析" class="headerlink" title="防火墙共性问题：深度包检测、操作系统、网络协议分析"></a>防火墙共性问题：深度包检测、操作系统、网络协议分析</h4><h4 id="防火墙防御体系结构主要有基于双宿主主机防火墙、基于代理防火墙、基于屏蔽子网的防火墙"><a href="#防火墙防御体系结构主要有基于双宿主主机防火墙、基于代理防火墙、基于屏蔽子网的防火墙" class="headerlink" title="防火墙防御体系结构主要有基于双宿主主机防火墙、基于代理防火墙、基于屏蔽子网的防火墙"></a>防火墙防御体系结构主要有基于双宿主主机防火墙、基于代理防火墙、基于屏蔽子网的防火墙</h4><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261003102740615.png" alt="image-20261003102740615"></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261003102754515.png" alt="image-20261003102754515"></p>
+<p>IPtables防火墙</p>
+<p><strong>IPtables是Linux系统自带的防火墙，支持包过滤、数据包转发、地址转化、基于MAC地址的过滤、基于状态的过滤、包速率限制等。它是软件防火墙，四表五链</strong></p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261003103319343.png" alt="image-20261003103319343"></p>
+<h4 id="9、VPN"><a href="#9、VPN" class="headerlink" title="9、VPN"></a>9、VPN</h4><p>VPN安全服务有以下3点：保密性服务、完整性服务、认证服务。</p>
+<p>VPN按照TCP&#x2F;IP协议层的实现方式可将其分为链路层VPN、网络层VPN、传输层VPN。</p>
+<p>链路层VPN：实现方式ATM、Frame Relay、多协议标签交换MPLS</p>
+<p>网络层VPN：受控路由过滤、隧道技术、GRE通用路由封装协议</p>
+<p>传输层VPN：通过SSL来实现</p>
+<p>VPN的核心技术是密码算法。算法有国外的DES、AES、IDE、RSA，国内商用密码算法SM1、SM4分组密码算法、SM3杂凑算法。</p>
+<p>密钥分发分为两种：手动配置、密钥交换协议动态分发。</p>
+<p>VPN认证分为两种：用户身份认证、数据完整性和合法性认证。</p>
+<p>IP AH（认证头协议）：<strong>保证IP包的完整性和提供数据源认证</strong>，为IP数据报文提供无连接的完整性、数据源鉴别和抗重放攻击服务。</p>
+<p>IP ESP （封装安全有效负荷）：<strong>在于保证IP包的保密性</strong>，方法是将IP包做加密处理，对数据域进行安全封装，并生成带有ESP协议信息的IP包。</p>
+<p><strong>IPSec 相关的密钥管理协议主要有互联网密钥交换协议IKE、互联网安全关联与密钥管理协议ISAKMP、密钥交换协议Oakley。</strong></p>
+<p>VPN主要隧道协议有PPTP(第二层)、L2TP(第二层)、GRE(第三层)、IPSec(第三层)、SSL VPN(第四层)、TLS VPN(第四层)。</p>
+<h5 id="SSL协议"><a href="#SSL协议" class="headerlink" title="SSL协议"></a>SSL协议</h5><p><strong>SSL协议是介于应用层和TCP层之间的安全通信协议。包含握手协议、密码规格变更协议、报警协议和记录层协议。</strong></p>
+<p><strong>握手协议：身份鉴别和安全参数协商</strong></p>
+<p><strong>密码规格变更协议：通知安全参数变更</strong></p>
+<p><strong>报警协议：通知和报警</strong></p>
+<p><strong>记录层协议：数据传输分段、压缩和解压缩、加密解密、完整性校验</strong></p>
+<p>SSL提供三种安全通信服务</p>
+<p>1、保密通信：数据的加、解密采用对称式密码算法，例如DES、AES等</p>
+<p>2、点对点之前的身份认证：采用非对称密码算法，例如RSA、DSS等</p>
+<p>3、可靠通信：信息传送时包含信息完整性检查，使用有密钥保护的消息认证码（MAC）。MAC的计算采用安全杂凑函数例如（MD5、SHA）。</p>
+<p><strong>VPN主要隧道协议有PPTP(第二层)、L2TP(第二层)、GRE(第三层)、IPSec(第三层)、SSL VPN(第四层)、TLS VPN(第四层)。</strong></p>
+<p>Intranet VPN:用于内部网络，常为用户到用户的VPN，使用传输模式。也可使用隧道模式用于连接不同地点的连接，如专用的在两个办公场所之间的连接。</p>
+<p> Internet VPN:通过公网的VPN连接，远程访问VPN。 </p>
+<p>Extranet VPN:一般是合作伙伴之间的VPN连接。</p>
+<h3 id="10、入侵检测技术"><a href="#10、入侵检测技术" class="headerlink" title="10、入侵检测技术"></a>10、入侵检测技术</h3><p>​	入侵检测作用：发现受保护系统中的入侵行为或异常行为；检验安全保护措施的有效性；分析受保护系统所面临的威胁；有利于阻止安全事件扩大，及时报警触发网络安全应急响应；可以为网络安全策略的指定提供只要知道；报警信息可用作网络犯罪取证。</p>
+<p>入侵检测技术：基于误用的入侵检测；基于异常入侵检测技术。</p>
+<p>误用入侵检测通常称为基于特征的入侵检测方法。（snort就是这类）</p>
+<p>异常入侵检测通常是基于非正常行为的入侵检测方法。</p>
+<p><strong>入侵检测功能模块组成：数据采集、入侵分析引擎、应急处理、管理配置、相关辅助</strong></p>
+<p><strong>IDS分为三类：基于主机 HIDS、基于网络 NIDS（Snort是这个类型）、分布式入侵检测 DIDS（多台主机采集分析）</strong></p>
+<p>Snort的配置有三个主要模式：嗅探、包记录和网络入侵检测。</p>
+<h3 id="11、网络物理隔离技术原理与应用-了解"><a href="#11、网络物理隔离技术原理与应用-了解" class="headerlink" title="11、网络物理隔离技术原理与应用(了解)"></a>11、网络物理隔离技术原理与应用(了解)</h3><h3 id="12、网络安全审计技术原理与应用（了解）"><a href="#12、网络安全审计技术原理与应用（了解）" class="headerlink" title="12、网络安全审计技术原理与应用（了解）"></a>12、网络安全审计技术原理与应用（了解）</h3><h3 id="13、网络安全漏洞防护技术原理与应用（了解）"><a href="#13、网络安全漏洞防护技术原理与应用（了解）" class="headerlink" title="13、网络安全漏洞防护技术原理与应用（了解）"></a>13、网络安全漏洞防护技术原理与应用（了解）</h3><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261003142224850.png" alt="image-20261003142224850"></p>
+<h3 id="15、恶意代码"><a href="#15、恶意代码" class="headerlink" title="15、恶意代码"></a>15、恶意代码</h3><p>计算机病毒是恶意代码的一种类型，它是一组具有自我复制、传播能力的程序代码。它是由三部分组成：复制传染部件、隐藏部件、破坏部件</p>
+<h5 id="特洛伊木马，是具有伪装能力、隐蔽执行非法功能的恶意程序，而受害用户表面看到的是合法功能的执行。特洛伊木马不具备自我传播能力，而是通过其他的传播机制来实现。"><a href="#特洛伊木马，是具有伪装能力、隐蔽执行非法功能的恶意程序，而受害用户表面看到的是合法功能的执行。特洛伊木马不具备自我传播能力，而是通过其他的传播机制来实现。" class="headerlink" title="特洛伊木马，是具有伪装能力、隐蔽执行非法功能的恶意程序，而受害用户表面看到的是合法功能的执行。特洛伊木马不具备自我传播能力，而是通过其他的传播机制来实现。"></a>特洛伊木马，是具有伪装能力、隐蔽执行非法功能的恶意程序，而受害用户表面看到的是合法功能的执行。<strong>特洛伊木马不具备自我传播能力，而是通过其他的传播机制来实现。</strong></h5><p>植入技术：1、被动：文件捆绑法、邮件附件法、Web网页。2、主动：利用目标系统的脆弱性，利用其漏洞，通过程序自动完成木马植入。</p>
+<h5 id="蠕虫病毒是一种具有自我复制和传播能力、可独立自动运行的恶意程序。利用系统中存在的漏洞，将自身在节点中传播。四个功能：1、探测模块；2、传播模块；3、蠕虫引擎模块；4、负载模块；"><a href="#蠕虫病毒是一种具有自我复制和传播能力、可独立自动运行的恶意程序。利用系统中存在的漏洞，将自身在节点中传播。四个功能：1、探测模块；2、传播模块；3、蠕虫引擎模块；4、负载模块；" class="headerlink" title="蠕虫病毒是一种具有自我复制和传播能力、可独立自动运行的恶意程序。利用系统中存在的漏洞，将自身在节点中传播。四个功能：1、探测模块；2、传播模块；3、蠕虫引擎模块；4、负载模块；"></a>蠕虫病毒是一种具有自我复制和传播能力、可独立自动运行的恶意程序。利用系统中存在的漏洞，将自身在节点中传播。四个功能：1、探测模块；2、传播模块；3、蠕虫引擎模块；4、负载模块；</h5><p><strong>扫描技术分为三类：1、随机扫描（Slammer）；2、顺序扫描；3、选择性扫描。</strong></p>
+<p><strong>Worm</strong> 是蠕虫病毒的前缀；<strong>Binder</strong> 是捆绑机病毒的前缀；<strong>Trojan</strong> 是特洛伊木马的前缀；<strong>Seript</strong>是脚本病毒</p>
+<h3 id="15、网络安全主动防御技术与应用"><a href="#15、网络安全主动防御技术与应用" class="headerlink" title="15、网络安全主动防御技术与应用"></a>15、网络安全主动防御技术与应用</h3><p><strong>数字水印应用场景主要由版权保护、信息隐藏、信息溯源、访问控制。</strong></p>
+<p><strong>隐私保护的常用技术措施有抑止、泛化、置换、扰动、裁剪。</strong></p>
+<p><strong>抑止：通过将数据置空的方式限制数据发布</strong></p>
+<p><strong>泛化：通过降低数据精度来提供匿名的方式</strong></p>
+<p><strong>置换：改变数据的属组</strong></p>
+<p><strong>扰动：数据发布时添加一定的噪声，包括数据增删、变换</strong></p>
+<p><strong>裁剪：将敏感数据分开发布</strong></p>
+<h3 id="16、网络安全风险评估技术原理与应用"><a href="#16、网络安全风险评估技术原理与应用" class="headerlink" title="16、网络安全风险评估技术原理与应用"></a>16、网络安全风险评估技术原理与应用</h3><h5 id="风险评估要素：资产、威胁、脆弱性、安全措施、风险"><a href="#风险评估要素：资产、威胁、脆弱性、安全措施、风险" class="headerlink" title="风险评估要素：资产、威胁、脆弱性、安全措施、风险"></a>风险评估要素：资产、威胁、脆弱性、安全措施、风险</h5><p>风险评估包括：风险评估准备、资产识别、威胁识别、脆弱性识别、已有的网络安全措施分析、网络安全风险分析、网络安全风险处置与管理。</p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261003152534590.png" alt="image-20261003152534590"></p>
+<h3 id="17、网络安全应急响应技术原理与应用"><a href="#17、网络安全应急响应技术原理与应用" class="headerlink" title="17、网络安全应急响应技术原理与应用"></a>17、网络安全应急响应技术原理与应用</h3><p><strong>应急响应事件处理流程：安全事件报警、安全事件确认、启动应急预案、安全事件处理、攥写报告、应急工作总结等</strong></p>
+<h5 id="安全事件处理"><a href="#安全事件处理" class="headerlink" title="安全事件处理"></a>安全事件处理</h5><p>​	1、准备工作：通知相关人员，交换必要信息。</p>
+<p>​	2、检测工作：对现场做快照，保护一切可能作为证据的记录</p>
+<p>​	3、抑止工作：采取围堵措施，尽量限制攻击涉及范围</p>
+<p>​	4、根除工作：解决问题，根除隐患，分析导致事故发生的系统脆弱点，并采取补救措施</p>
+<p>​	5、恢复工作：恢复系统，使系统正常运行</p>
+<p>​	6、总结工作：提交事故处理报告</p>
+<h5 id="网络安全取证"><a href="#网络安全取证" class="headerlink" title="网络安全取证"></a>网络安全取证</h5><p>​	1、取证现场保护。保护受害系统或设备的完整性，防止证据信息丢失</p>
+<p>​	2、识别证据。识别可获取的证据信息类型，应用适当的获取技术与工具</p>
+<p>​	3、传输证据。将获取的信息安全地传送到取证设备</p>
+<p>​	4、保存证据。存储证据，并确保存储的数据与原始数据一致性</p>
+<p>​	5、分析证据。将有关证据进行关联分析，构造证据链，重现攻击过程</p>
+<p>​	6、提交证据。向管理者、律师或者法院提交证据</p>
+<h3 id="18、网络安全测评技术与标准（了解）"><a href="#18、网络安全测评技术与标准（了解）" class="headerlink" title="18、网络安全测评技术与标准（了解）"></a>18、网络安全测评技术与标准（了解）</h3><p><strong>安全功能符合性检测的主要依据：《信息安全技术 信息系统等级保护安全设计要求》（GB&#x2F;T 25070-2010)、《信息安全技术 信息通用安全技术要求》（GB&#x2F;T20271-2006）、网络信息安全最佳实践、网络信息系统项目安全需求说明书等。</strong></p>
+<p>黑盒：只需要提供测试目标地址</p>
+<p>白盒：需要尽可能的提供测试对象信息，测评团队根据所获取的信息，指定特殊的渗透方案。该方式适合高级持续威胁者模拟。</p>
+<p>灰盒：需要提供部分测试对象信息，测试团队根据获取的信息，模拟不同级别的威胁	进行渗透。该方法适合手机银行和代码安全测试。</p>
+<h3 id="19、操作系统安全"><a href="#19、操作系统安全" class="headerlink" title="19、操作系统安全"></a>19、操作系统安全</h3><h4 id="Windows系统"><a href="#Windows系统" class="headerlink" title="Windows系统"></a>Windows系统</h4><p>Windows安全子系统：本地安全授权（LSA）、安全账户管理（SAM）和安全参看监视器（SRM）</p>
+<p>Windows审计&#x2F; 日志机制：Windows日志有三类型：系统日志（sysEvent.evt)、应用日志(AppEvent.evt)、安全日志(secEvent.evt)。存放目录在系统安全下“system32\config”目录下。</p>
+<h4 id="Linux系统"><a href="#Linux系统" class="headerlink" title="Linux系统"></a>Linux系统</h4><p>Linux审查目录&#x2F;var&#x2F;log。常见日志名称如下：</p>
+<p>lastlog：记录用户最近成功登录时间</p>
+<p>loginlog：不良的登录尝试记录</p>
+<p>messages：记录输出到系统主控制台以及由syslog系统服务程序产生的消息</p>
+<p>utmp：记录当前登录的每个用户</p>
+<p>wtmp：记录每一个用户登录和注销的历史信息</p>
+<p>vold.log：记录使用外部介质出现的错误</p>
+<p>xferlog；记录ftp的存取情况</p>
+<p>acct：记录每一个用户使用过的命令</p>
+<h3 id="20、数据库安全（了解）"><a href="#20、数据库安全（了解）" class="headerlink" title="20、数据库安全（了解）"></a>20、数据库安全（了解）</h3><p><strong>数据库加密方式分为两种：1、数据库传输加密采用SSL协议加密；2、数据库存储加密。存储加密分为库内加密和库外加密</strong></p>
+<h3 id="21、网络设备"><a href="#21、网络设备" class="headerlink" title="21、网络设备"></a>21、网络设备</h3><h4 id="交换机"><a href="#交换机" class="headerlink" title="交换机"></a>交换机</h4><p>​	交换机分为第一代到第五代交换机。</p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004100526422.png" alt="image-20261004100526422"></p>
+<h3 id="22、网络安全需求分析与安全保护工程"><a href="#22、网络安全需求分析与安全保护工程" class="headerlink" title="22、网络安全需求分析与安全保护工程"></a>22、网络安全需求分析与安全保护工程</h3><p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004101345282.png" alt="image-20261004101345282"></p>
+<h3 id="23、云服务（了解）"><a href="#23、云服务（了解）" class="headerlink" title="23、云服务（了解）"></a>23、云服务（了解）</h3><h3 id="24、工控系统安全（了解）"><a href="#24、工控系统安全（了解）" class="headerlink" title="24、工控系统安全（了解）"></a>24、工控系统安全（了解）</h3><h3 id="25、移动应用安全需求分析与安全保护工程"><a href="#25、移动应用安全需求分析与安全保护工程" class="headerlink" title="25、移动应用安全需求分析与安全保护工程"></a>25、移动应用安全需求分析与安全保护工程</h3><p>Android是一个开源的移动终端操作系统，系统结构分成：Linux内核层系统、系统运行库层、应用程序框架层、应用程序层。</p>
+<p><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004102422536.png" alt="image-20261004102422536"></p>
+<h4 id="安全措施"><a href="#安全措施" class="headerlink" title="安全措施"></a>安全措施</h4><p>应用程序层：权限声明机制</p>
+<p>应用程序框架层：应用程序前面机制</p>
+<p>系统运行库层：安全沙箱、SSL</p>
+<p>内核层：文件系统安全、地址空间布局随机化、SE Linux</p>
+<p>权限分配时根据Android应用apk安装包中的<strong>Manifest文件（或AndroidManifest.xml)</strong></p>
+<p><strong>应用层权限包括normal权限、dangerous权限、signature权限、signatureOrSysem权限</strong></p>
+<p><strong>移动App安全加固：防反编译、防调试、防篡改、防窃取等多种安全保护措施</strong></p>
+<p><strong>防反编译采取的措施：加密、混淆。（混淆方式：名称混淆、控制混淆、计算混淆）</strong></p>
+<p><strong>Android的四大组件是Activity（活动）、Service（服务）、BroadcastReceiver（广播接收器）和ContentProvider（内容提供者）</strong></p>
+<p><strong>Activity（活动）用于展示用户界面的组件</strong></p>
+<p><strong>Service（服务）是无界面的后台组件，用于执行长期运行的操作</strong></p>
+<p><strong>Broadcast Receiver（广播接收器）用于监听系统或应用发出的全局事件</strong></p>
+<p><strong>Content Provider（内容提供者）用于管理应用间的数据共享，通过URI标识数据，实现跨应用访问</strong></p>
+<p><strong><img src="/2026/09/30/%E8%BD%AF%E8%80%83%E7%AC%94%E8%AE%B0/image-20261004103510250.png" alt="image-20261004103510250"></strong></p>
+<h3 id="26、大数据安全需求分析与安全保护工程（了解）"><a href="#26、大数据安全需求分析与安全保护工程（了解）" class="headerlink" title="26、大数据安全需求分析与安全保护工程（了解）"></a>26、大数据安全需求分析与安全保护工程（了解）</h3><h2 id="考试成绩"><a href="#考试成绩" class="headerlink" title="考试成绩"></a>考试成绩</h2><p>![image-20261127092300813](软考笔记 &#x2F;image-20261127092300813.png)</p>
+
+    </div>
+
+    
+        <hr class="fhr">
+        <div id="vcomments"></div>
+    
+</div>
+    <div class="footer" id="footer">
+    <p><h4>Copyright © 2020 | Author: Dawn Nine | Theme By <a class="theme-author" target="_blank" rel="noopener" href="https://github.com/Xunzhuo/hexo-theme-coder" style="font-size:14px; color: #969696">Coder</a></h4>
+    
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">Page Views: <span id="busuanzi_value_site_pv"></span></span>
+        <span class="post-meta-divider">|</span>
+        <span id="busuanzi_container_site_uv">Unique Visitors: <span id="busuanzi_value_site_uv"></span></span>
+    
+    <label class="el-switch el-switch-blue el-switch-sm" style="vertical-align: sub;">
+        <input type="checkbox" name="switch" id="update_style">
+        <span class="el-switch-style"></span>
+    </label>
+
+    <!--         <script type="text/javascript">
+    var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+    document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+    </script> -->
+</p>
+</div>
+
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="">
+<input type="hidden" id="valine_appKey" value="">
+
+<script src="/libs/jquery.min.js"></script>
+
+
+<script src="/libs/highlight/highlight.pack.js"></script>
+
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+
+<script src="/js/js.js"></script>
+
+<style type="text/css">
+.v * {
+color: #698fca;
+}
+.v .vlist .vcard .vhead .vsys {
+color: #3a3e4a;
+}
+.v .vlist .vcard .vh .vmeta .vat {
+color: #638fd5;
+}
+.v .vlist .vcard .vhead .vnick {
+color: #6ba1ff;
+}
+.v a {
+color: #8696b1;
+}
+.v .vlist .vcard .vhead .vnick:hover {
+color: #669bfc;
+}
+</style>
+    <script type="text/javascript" color="173,174,173" opacity='1' zIndex="-2" count="99" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+</body>
+</html>
